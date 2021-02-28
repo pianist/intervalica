@@ -98,6 +98,7 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 	high = []
 	minLow = None
 	maxLow = None
+	maxHigh = None
 	for stage, interval, intervalRepr in seq:
 		n0 = pitch + stage
 		if oldLow != None:
@@ -119,10 +120,16 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 			minLow = n0
 		if (maxLow == None) or (maxLow < n0):
 			maxLow = n0
+		if (maxHigh == None) or (maxHigh < n1):
+			maxHigh = n1
 
 	if octave == None:
 		m = (minLow + maxLow + 1) // 2
 		octave = (12 + 11 - m) // 12
+
+#	if octave == None:
+#		m = (minLow + maxHigh + 1) // 2
+#		octave = (12 + 11 + 6 - m) // 12
 
 	voices = [('voiceOne', []), ('voiceTwo', [])]
 	for i in range(len(seq)):
@@ -132,6 +139,7 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 		n0 += octave * 12
 		n1 += octave * 12
 
+		intervalRepr = seq[i][2]
 		if titles == None:
 			title = None
 		elif titles == 'en':
@@ -177,7 +185,7 @@ def strs2LilyPond (ss, tonality, debug=False, titles=None):
 
 	return '\n\n'.join(r)
 
-class Str2LilyPond:
+class LilyPonder:
 
 	def __init__ (self, tonality):
 		self.tonality = tonality
@@ -185,4 +193,4 @@ class Str2LilyPond:
 	def processStrings (self, ss, debug=False, titles=None):
 		return strs2LilyPond(ss, self.tonality, debug=debug, titles=titles)
 
-__all__ = ["Str2LilyPond"]
+__all__ = ["LilyPonder"]

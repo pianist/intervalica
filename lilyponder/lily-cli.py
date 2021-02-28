@@ -40,7 +40,7 @@ def main ():
 		ss = (s,)
 
 	if not err:
-		print(str2LilyPond.Str2LilyPond(tonality).processStrings(ss, debug=debug, titles=titles))
+		print(LilyPonder.LilyPonder(tonality).processStrings(ss, debug=debug, titles=titles))
 	else:
 		print("usage: %s [ -d ] [ -t ( en | ru ) ] ( str | - ) tonality" % (sys.argv[0],))
 		print("	-d: debug output")
