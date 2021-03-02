@@ -152,7 +152,7 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
-	r = ['\score {\n\t\\new Staff <<']
+	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
 		notes = [encodeNote('C', x[0]) for x in voice[1]]
 		if len(notes) > 1:
