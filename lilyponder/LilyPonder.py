@@ -152,7 +152,7 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
-	r = ['\\new Staff <<']
+	r = ['\score {\n\t\\new Staff <<']
 	for voice in voices:
 		notes = [encodeNote('C', x[0]) for x in voice[1]]
 		if len(notes) > 1:
@@ -162,13 +162,16 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 		for i in range(len(notes)):
 			if voice[1][i][1] != None:
 				notes[i] += '^"%s"' % (voice[1][i][1],)
-		r.append("""	\\new Voice
-		{
-			\\key %s \\%s
-			\\%s
-			%s
-		}""" % (encodeNote0['C'][pitch], mode, voice[0], ' '.join(notes)))
-	r.append(">>")
+		r.append("""		\\new Voice
+			{
+				\\key %s \\%s
+				\\%s
+				%s
+			}""" % (encodeNote0['C'][pitch], mode, voice[0], ' '.join(notes)))
+	r.append("""	>>
+	\\layout { }
+	\\midi { }
+}""")
 	return '\n'.join(r)
 
 # ss: list of strings
