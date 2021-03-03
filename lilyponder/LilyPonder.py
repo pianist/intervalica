@@ -89,7 +89,7 @@ decodeTonality = {
 	'b': (11, 'minor')
 }
 
-def strToLilyPond (s, tonality, titles=None, octave=None):
+def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 	pitch, mode = decodeTonality[tonality]
 
 	seq = decodeSeq(mode, s)
@@ -170,8 +170,13 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 				\\%s
 				%s
 			}""" % (encodeNote0['C'][pitch], mode, voice[0], ' '.join(notes)))
-	r.append("""	>>
-	\\layout { }
+	r.append("	>>")
+	if debug:
+		debugStr = s.replace('->', ' → ') + ' ' + tonality
+		r.append("""	\\header {
+		piece = "%s"
+	}""" % (debugStr,))
+	r.append("""	\\layout { }
 	\\midi { }
 }""")
 	return '\n'.join(r)
@@ -180,15 +185,12 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 # returns: [ header, score0, score1, ... ]
 def strs2LilyPond (ss, tonality, debug=False, titles=None):
 	r = [ '\\version "2.8.0"' ]
-	if debug and (len(ss) == 1):
-		sd = ss[0].replace('->', '→') + ' ' +tonality
-		r.append("""\\header {
-	%% title = "%s"
-	composer = "%s"
-}""" % (sd, sd))
+	r.append("""\\header {
+	tagline = ""
+}""")
 	r = [ '\n\n'.join(r) ]
 
-	r.extend([strToLilyPond(s, tonality, titles=titles) for s in ss])
+	r.extend([strToLilyPond(s, tonality, titles=titles, debug=debug) for s in ss])
 
 	return r
 
@@ -236,7 +238,7 @@ def getOpus (s):
 	if not os.path.exists(fName):
 		wavFName = getWAV(s)
 		if wavFName != None:
-			ret = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", wavFName, fName], stdout=subprocess.DEVNULL)
+			ret = subprocess.run(["ffmpeg", "-n", "-hide_banner", "-loglevel", "error", "-i", wavFName, fName], stdout=subprocess.DEVNULL)
 			assert ret.returncode == 0
 	if os.path.exists(fName):
 		return fName
