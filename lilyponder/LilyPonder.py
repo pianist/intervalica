@@ -4,6 +4,8 @@
 # Alexander Shiryaev, 2021.02
 #
 
+import hashlib, subprocess, tempfile, os
+
 decodeStage = { # halftones
 	'major': {
 		'I': 0,
@@ -175,6 +177,7 @@ def strToLilyPond (s, tonality, titles=None, octave=None):
 	return '\n'.join(r)
 
 # ss: list of strings
+# returns: [ header, score0, score1, ... ]
 def strs2LilyPond (ss, tonality, debug=False, titles=None):
 	r = [ '\\version "2.8.0"' ]
 	if debug and (len(ss) == 1):
@@ -183,17 +186,83 @@ def strs2LilyPond (ss, tonality, debug=False, titles=None):
 	%% title = "%s"
 	composer = "%s"
 }""" % (sd, sd))
+	r = [ '\n\n'.join(r) ]
 
 	r.extend([strToLilyPond(s, tonality, titles=titles) for s in ss])
 
-	return '\n\n'.join(r)
+	return r
+
+def getBaseFileName (s):
+	cacheDir = os.path.join(tempfile.gettempdir(), 'LilyPonder-cache')
+	os.makedirs(cacheDir, exist_ok=True)
+	name = hashlib.blake2s(s).hexdigest()
+	return os.path.join(cacheDir, name)
+
+def getImage (s, format):
+	assert format in ('pdf', 'svg', 'png', 'ps', 'eps')
+
+	baseFName = getBaseFileName(s)
+	fName = baseFName + '.' + format
+	if not os.path.exists(fName):
+		srcFName = baseFName + '.lp'
+		with open(srcFName, 'wb') as fh:
+			fh.write(s)
+
+		ret = subprocess.run(["lilypond", "--%s" % (format,), "-s", "-o", baseFName, srcFName], stdout=subprocess.DEVNULL)
+		assert ret.returncode == 0
+
+	if os.path.exists(fName):
+		return fName
+
+def getMIDI (s):
+	fName = getImage(s, 'pdf')
+	if fName != None:
+		fName = fName[:-3] + 'midi'
+		if os.path.exists(fName):
+			return fName
+
+def getWAV (s):
+	fName = getBaseFileName(s) + '.wav'
+	if not os.path.exists(fName):
+		srcFName = getMIDI(s)
+		if os.path.exists(srcFName):
+			ret = subprocess.run(["timidity", "-s", "48000", "-OwS1", "-o", fName, srcFName], stdout=subprocess.DEVNULL)
+			assert ret.returncode == 0
+	if os.path.exists(fName):
+		return fName
+
+def getOpus (s):
+	fName = getBaseFileName(s) + '.opus'
+	if not os.path.exists(fName):
+		wavFName = getWAV(s)
+		if wavFName != None:
+			ret = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", wavFName, fName], stdout=subprocess.DEVNULL)
+			assert ret.returncode == 0
+	if os.path.exists(fName):
+		return fName
+
+def getSound (s, format):
+	if format == 'opus':
+		return getOpus(s)
+	elif format == 'midi':
+		return getMIDI(s)
+	elif format == 'wav':
+		return getWAV(s)
+	else:
+		assert False
 
 class LilyPonder:
 
 	def __init__ (self, tonality):
 		self.tonality = tonality
 
-	def processStrings (self, ss, debug=False, titles=None):
+	def strs2LilyPond (self, ss, debug=False, titles=None):
 		return strs2LilyPond(ss, self.tonality, debug=debug, titles=titles)
+
+	def getImage (self, s, format):
+		return getImage(s, format)
+
+	def getSound (self, s, format):
+		return getSound(s, format)
 
 __all__ = ["LilyPonder"]
