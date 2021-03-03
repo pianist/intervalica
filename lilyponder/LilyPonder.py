@@ -217,11 +217,12 @@ def getImage (s, format):
 		return fName
 
 def getMIDI (s):
-	fName = getImage(s, 'pdf')
-	if fName != None:
-		fName = fName[:-3] + 'midi'
-		if os.path.exists(fName):
-			return fName
+	fName = getBaseFileName(s) + '.midi'
+	if not os.path.exists(fName):
+		r = getImage(s, 'pdf')
+		assert r != None
+	if os.path.exists(fName):
+		return fName
 
 def getWAV (s):
 	fName = getBaseFileName(s) + '.wav'
