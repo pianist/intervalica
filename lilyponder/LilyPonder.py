@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Alexander Shiryaev, 2021.02
+# Alexander Shiryaev, 2021.03
 #
 
 import hashlib, subprocess, tempfile, os
