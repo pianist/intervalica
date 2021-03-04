@@ -109,11 +109,12 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 			while n0 - oldLow >= 6:
 				n0 -= 12
 
-		if oldHigh != None:
-			while n0 > oldHigh:
-				n0 -= 12
+#		if oldHigh != None:
+#			while n0 > oldHigh:
+#				n0 -= 12
 
 		n1 = n0 + interval
+		oldLow = n0
 		oldHigh = n1
 		low.append(n0)
 		high.append(n1)
