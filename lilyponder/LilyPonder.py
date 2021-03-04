@@ -66,8 +66,23 @@ encodeNote0 = { # halftones
 		9: 'a',
 		10: 'bes',
 		11: 'b'
+	},
+	'E': {
+		0: 'e',
+		1: 'f',
+		2: 'fis',
+		3: 'fisis',
+		4: 'gis',
+		5: 'a',
+		6: 'ais',
+		7: 'b',
+		8: 'c',
+		9: 'cis',
+		10: 'd',
+		11: 'dis'
 	}
 }
+
 
 encodeNote = lambda tonality, x: encodeNote0[tonality][x % 12] + "'"*(x // 12)
 
