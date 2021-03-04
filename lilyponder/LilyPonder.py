@@ -83,7 +83,6 @@ encodeNote0 = { # halftones
 	}
 }
 
-
 encodeNote = lambda tonality, x: encodeNote0[tonality][x % 12] + "'"*(x // 12)
 
 decodeTonality = {
@@ -180,7 +179,7 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
-		notes = [encodeNote('C', x[0]) for x in voice[1]]
+		notes = [encodeNote(tonality, x[0] - pitch) for x in voice[1]]
 		if len(notes) > 1:
 			notes[0] = notes[0] + "2"
 		if len(notes) % 2 == 1:
