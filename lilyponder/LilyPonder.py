@@ -103,15 +103,23 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 	maxHigh = None
 	for stage, interval, intervalRepr in seq:
 		n0 = pitch + stage
+
+		# low voice: relative
 		if oldLow != None:
 			while n0 - oldLow < -6:
 				n0 += 12
 			while n0 - oldLow >= 6:
 				n0 -= 12
 
-#		if oldHigh != None:
-#			while n0 > oldHigh:
-#				n0 -= 12
+		# prevent high voice jumps through low
+		if (oldHigh != None) and (oldLow != None):
+			# example: III_s6->VII_s3
+			while n0 + interval < oldLow:
+				n0 += 12
+
+			# example: III_s3->VI_s7
+			while n0 > oldHigh:
+				n0 -= 12
 
 		n1 = n0 + interval
 		oldLow = n0
