@@ -76,10 +76,10 @@ encodeNote0 = { # halftones
 		5: 'a',
 		6: 'ais',
 		7: 'b',
-		8: 'c',
-		9: 'cis',
-		10: 'd',
-		11: 'dis'
+		8: "c'",
+		9: "cis'",
+		10: "d'",
+		11: "dis'"
 	}
 }
 
@@ -154,7 +154,11 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 
 #	if octave == None:
 #		m = (minLow + maxHigh + 1) // 2
-#		octave = (12 + 11 + 6 - m) // 12
+#		# octave = (12 + 11 + 6 - m) // 12
+#		octave = (12 + 11 + 5 - m) // 12
+
+	while minLow - pitch + octave * 12 < 0:
+		octave += 1
 
 	voices = [('voiceOne', []), ('voiceTwo', [])]
 	for i in range(len(seq)):
@@ -174,6 +178,8 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 		else:
 			assert False
 
+		assert n0 <= n1
+		assert n0 - pitch >= 0
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
