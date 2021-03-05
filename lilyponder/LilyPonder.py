@@ -293,7 +293,7 @@ tonalityToLilyPondKey = {
 
 def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 	if ' ' in s:
-		s, tonality = s.split(' ')
+		tonality, s = s.split()
 
 	pitch, mode = decodeTonality[tonality]
 
@@ -396,7 +396,7 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 			}""" % (tonalityToLilyPondKey[tonality], voice[0], ' '.join(notes)))
 	r.append("	>>")
 	if debug:
-		debugStr = s.replace('->', ' → ') + ' ' + tonality
+		debugStr = tonality + ' ' + s.replace('->', ' → ')
 		r.append("""	\\header {
 		piece = "%s"
 	}""" % (debugStr,))

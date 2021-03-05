@@ -39,8 +39,8 @@ def main ():
 					else:
 						break
 			elif len(args) == 1:
-				s = arg
-				tonality = args.pop(0)
+				tonality = arg
+				s = args.pop(0)
 				err = False
 			else:
 				break
@@ -69,7 +69,7 @@ def main ():
 				assert fName != None
 				print(fName)
 	else:
-		print("usage: %s { -d | -t lang | -of format } ( str | - ) tonality" % (sys.argv[0],))
+		print("usage: %s { -d | -t lang | -of format } tonality ( str | - )" % (sys.argv[0],))
 		print("	-d: debug output")
 		print("	-t lang: add interval titles")
 		print("		lang: language")
