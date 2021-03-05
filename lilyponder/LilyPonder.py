@@ -157,8 +157,8 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 #		# octave = (12 + 11 + 6 - m) // 12
 #		octave = (12 + 11 + 5 - m) // 12
 
-	while minLow + octave * 12 < 0:
-		octave += 1
+	if minLow + octave * 12 < 0:
+		octave += (11 - (minLow + octave * 12)) // 12
 
 	voices = [('voiceOne', []), ('voiceTwo', [])]
 	for i in range(len(seq)):
@@ -178,8 +178,8 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 		else:
 			assert False
 
-		assert n0 <= n1
 		assert n0 >= 0
+		assert n0 <= n1
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
