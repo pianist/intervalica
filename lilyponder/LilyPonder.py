@@ -62,10 +62,66 @@ encodeNote0 = { # halftones
 		5: 'f',
 		6: 'fis',
 		7: 'g',
-		8: 'aes',
+		8: 'as',
 		9: 'a',
 		10: 'bes',
 		11: 'b'
+	},
+	'C#': {
+		0: 'bis,', # NOTE: special case
+		1: 'cis',
+		2: 'd',
+		3: 'dis',
+		4: 'disis',
+		5: 'eis',
+		6: 'fis',
+		7: 'fisis',
+		8: 'gis',
+		9: 'a',
+		10: 'ais',
+		11: 'b'
+	},
+	'Db': {
+		0: 'c',
+		1: 'des',
+		2: 'eses',
+		3: 'es',
+		4: 'e',
+		5: 'f',
+		6: 'ges',
+		7: 'g',
+		8: 'as',
+		9: 'beses',
+		10: 'bes',
+		11: "ces'"
+	},
+	'D': {
+		0: 'c',
+		1: 'cis',
+		2: 'd',
+		3: 'es',
+		4: 'e',
+		5: 'eis',
+		6: 'fis',
+		7: 'g',
+		8: 'gis',
+		9: 'a',
+		10: 'bes',
+		11: 'b'
+	},
+	'Eb': {
+		0: 'c',
+		1: 'des',
+		2: 'd',
+		3: 'es',
+		4: 'fes',
+		5: 'f',
+		6: 'fis',
+		7: 'g',
+		8: 'as',
+		9: 'a',
+		10: 'bes',
+		11: "ces'"
 	},
 	'E': {
 		0: 'c',
@@ -80,11 +136,124 @@ encodeNote0 = { # halftones
 		9: 'a',
 		10: 'ais',
 		11: 'b'
+	},
+	'F': {
+		0: 'c',
+		1: 'des',
+		2: 'd',
+		3: 'es',
+		4: 'e',
+		5: 'f',
+		6: 'ges',
+		7: 'g',
+		8: 'gis',
+		9: 'a',
+		10: 'bes',
+		11: 'b'
+	},
+	'F#': {
+		0: 'bis,', # NOTE: special case
+		1: 'cis',
+		2: 'd',
+		3: 'dis',
+		4: 'e',
+		5: 'eis',
+		6: 'fis',
+		7: 'g',
+		8: 'gis',
+		9: 'gisis',
+		10: 'ais',
+		11: 'b'
+	},
+	'Gb': {
+		0: 'c',
+		1: 'des',
+		2: 'eses',
+		3: 'es',
+		4: 'fes',
+		5: 'f',
+		6: 'ges',
+		7: 'ases',
+		8: 'as',
+		9: 'a',
+		10: 'bes',
+		11: "ces'"
+	},
+	'G': {
+		0: 'c',
+		1: 'cis',
+		2: 'd',
+		3: 'es',
+		4: 'e',
+		5: 'f',
+		6: 'fis',
+		7: 'g',
+		8: 'as',
+		9: 'a',
+		10: 'ais',
+		11: 'b'
+	},
+	'Ab': {
+		0: 'c',
+		1: 'des',
+		2: 'd',
+		3: 'es',
+		4: 'fes',
+		5: 'f',
+		6: 'ges',
+		7: 'g',
+		8: 'as',
+		9: 'beses',
+		10: 'bes',
+		11: 'b'
+	},
+	'A': {
+		0: 'bis,', # NOTE: special case
+		1: 'cis',
+		2: 'd',
+		3: 'dis',
+		4: 'e',
+		5: 'f',
+		6: 'fis',
+		7: 'g',
+		8: 'gis',
+		9: 'a',
+		10: 'bes',
+		11: 'b'
+	},
+	'Bb': {
+		0: 'c',
+		1: 'cis',
+		2: 'd',
+		3: 'es',
+		4: 'e',
+		5: 'f',
+		6: 'ges',
+		7: 'g',
+		8: 'as',
+		9: 'a',
+		10: 'bes',
+		11: "ces'"
+	},
+	'B': {
+		0: 'c',
+		1: 'cis',
+		2: 'cisis',
+		3: 'dis',
+		4: 'e',
+		5: 'eis',
+		6: 'fis',
+		7: 'g',
+		8: 'gis',
+		9: 'a',
+		10: 'ais',
+		11: 'b'
 	}
 }
 
 encodeNote = lambda tonality, x: encodeNote0[tonality][x % 12] + "'"*(x // 12)
 
+# tonality -> pitch, mode
 decodeTonality = {
 	'C': (0, 'major'), 'C#': (1, 'major'),
 	'Db': (1, 'major'), 'D': (2, 'major'),
@@ -103,7 +272,29 @@ decodeTonality = {
 	'b': (11, 'minor')
 }
 
+# tonality -> LilyPond key
+tonalityToLilyPondKey = {
+	'C': 'c \\major', 'C#': 'cis \\major',
+	'Db': 'des \\major', 'D': 'd \\major',
+	'Eb': 'es \\major', 'E': 'e \\major',
+	'F': 'f \\major', 'F#': 'fis \\major',
+	'Gb': 'ges \\major', 'G': 'g \\major',
+	'Ab': 'as \\major', 'A': 'a \\major',
+	'Bb': 'bes \\major', 'B': 'b \\major',
+
+	'c': 'c \\minor',
+	'd': 'd \\minor',
+	'e': 'e \\minor',
+	'f': 'f \\minor',
+	'g': 'g \\minor',
+	'a': 'a \\minor',
+	'b': 'b \\minor'
+}
+
 def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
+	if ' ' in s:
+		s, tonality = s.split(' ')
+
 	pitch, mode = decodeTonality[tonality]
 
 	seq = decodeSeq(mode, s)
@@ -157,8 +348,12 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 #		# octave = (12 + 11 + 6 - m) // 12
 #		octave = (12 + 11 + 5 - m) // 12
 
-	if minLow + octave * 12 < 0:
-		octave += (11 - (minLow + octave * 12)) // 12
+	if pitch in (1, 6, 9): # NOTE: special case (bis,)
+		if minLow + octave * 12 <= 0:
+			octave += (12 - (minLow + octave * 12)) // 12
+	else:
+		if minLow + octave * 12 < 0:
+			octave += (11 - (minLow + octave * 12)) // 12
 
 	voices = [('voiceOne', []), ('voiceTwo', [])]
 	for i in range(len(seq)):
@@ -185,7 +380,7 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
-		notes = [encodeNote(tonality, x[0]) for x in voice[1]]
+		notes = [encodeNote(tonality, x[0]).replace(",'", "") for x in voice[1]]
 		if len(notes) > 1:
 			notes[0] = notes[0] + "2"
 		if len(notes) % 2 == 1:
@@ -195,10 +390,10 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 				notes[i] += '^"%s"' % (voice[1][i][1],)
 		r.append("""		\\new Voice
 			{
-				\\key %s \\%s
+				\\key %s
 				\\%s
 				%s
-			}""" % (encodeNote0['C'][pitch], mode, voice[0], ' '.join(notes)))
+			}""" % (tonalityToLilyPondKey[tonality], voice[0], ' '.join(notes)))
 	r.append("	>>")
 	if debug:
 		debugStr = s.replace('->', ' → ') + ' ' + tonality
