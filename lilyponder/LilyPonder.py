@@ -9,6 +9,7 @@ import hashlib, subprocess, tempfile, os
 decodeStage = { # halftones
 	'major': {
 		'I': 0,
+		'I#': 1,
 		'IIb': 1,
 		'II': 2,
 		'II#': 3,
