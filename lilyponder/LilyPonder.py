@@ -291,10 +291,7 @@ tonalityToLilyPondKey = {
 	'b': 'b \\minor'
 }
 
-def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
-	if ' ' in s:
-		tonality, s = s.split()
-
+def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	pitch, mode = decodeTonality[tonality]
 
 	seq = decodeSeq(mode, s)
@@ -405,6 +402,19 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 }""")
 	return '\n'.join(r)
 
+def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
+	if ' ' in s:
+		tonality, s = s.split()
+
+	if tonality == '*dur':
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in decodeTonality.items() if v[1] == 'major' ]
+	elif tonality == '*moll':
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in decodeTonality.items() if v[1] == 'minor' ]
+	else:
+		r = ( strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave), )
+
+	return r
+
 # ss: list of strings
 # returns: [ header, score0, score1, ... ]
 def strs2LilyPond (ss, tonality, debug=False, titles=None):
@@ -414,7 +424,7 @@ def strs2LilyPond (ss, tonality, debug=False, titles=None):
 }""")
 	r = [ '\n\n'.join(r) ]
 
-	r.extend([strToLilyPond(s, tonality, titles=titles, debug=debug) for s in ss])
+	r.extend(['\n\n'.join(strToLilyPond(s, tonality, titles=titles, debug=debug)) for s in ss])
 
 	return r
 

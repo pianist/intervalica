@@ -80,9 +80,12 @@ def main ():
 		print("	str example: III_s3->IV_l3->II_l6->III_s6->I_l3->VIb_l6->V_p8->VII_d5->I_l3")
 		print("	tonality:")
 		print("		C: c major")
+		print("		C#: c# major")
+		print("		Db: db major")
 		print("		c: c minor")
-		print("		D: d major")
 		print("		...")
+		print("		*dur: all major")
+		print("		*moll: all minor")
 
 if __name__ == '__main__':
 	main()
