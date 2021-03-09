@@ -6,7 +6,7 @@
 
 import hashlib, subprocess, tempfile, os
 
-intervalToPitch = { # halftones
+intervalToStep = { # halftones
 	'major': {
 		'p1': 0,
 		's2': 1, 'l2': 2, 'e2': 3,
@@ -18,7 +18,7 @@ intervalToPitch = { # halftones
 		'p8': 12
 	}
 }
-intervalToPitch['minor'] = intervalToPitch['major'] # FIXME
+intervalToStep['minor'] = intervalToStep['major'] # FIXME
 
 enToRu = {
 	'p1': 'ч1',
@@ -31,7 +31,7 @@ enToRu = {
 	'p8': 'ч8'
 }
 
-pitchToLilyPond0 = { # halftones
+stepToLilyPond0 = { # halftones
 	'C': {
 		0: 'c',
 		1: 'des',
@@ -230,7 +230,7 @@ pitchToLilyPond0 = { # halftones
 	}
 }
 
-# tonality -> pitch, mode
+# tonality -> step, mode
 decodeTonality = {
 	'C': (0, 'major'), 'C#': (1, 'major'),
 	'Db': (1, 'major'), 'D': (2, 'major'),
@@ -495,7 +495,7 @@ stageToLilyPond = {
 	}
 }
 
-def lilyPondToPitch (x):
+def lilyPondToStep (x):
 	n = x.count("'") - x.count(",")
 	x = x.replace("'", '').replace(",", '')
 	return n * 12 + {
@@ -538,8 +538,8 @@ def lilyPondNormalize (x):
 		x += ","*(-n)
 	return x
 
-def pitchToLilyPond (tonality, x):
-	res = pitchToLilyPond0[tonality][x % 12]
+def stepToLilyPond (tonality, x):
+	res = stepToLilyPond0[tonality][x % 12]
 	n = x // 12
 	if n > 0:
 		res += "'"*n
@@ -561,42 +561,42 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	maxHigh = None
 	for stage, interval in seq:
 		n0 = stageToLilyPond[tonality][stage]
-		n0p = lilyPondToPitch(n0)
+		n0s = lilyPondToStep(n0)
 
 		# low voice: relative
 		if oldLow != None:
-			while n0p - oldLow < -6:
-				n0p += 12
+			while n0s - oldLow < -6:
+				n0s += 12
 				n0 += "'"
-			while n0p - oldLow >= 6:
-				n0p -= 12
+			while n0s - oldLow >= 6:
+				n0s -= 12
 				n0 += ","
 
 		# prevent high voice jumps through low
 		if (oldHigh != None) and (oldLow != None):
 			# example: III_s6->VII_s3
-			while n0p + intervalToPitch[mode][interval] < oldLow:
-				n0p += 12
+			while n0s + intervalToStep[mode][interval] < oldLow:
+				n0s += 12
 				n0 += "'"
 
 			# example: III_s3->VI_s7
-			while n0p > oldHigh:
-				n0p -= 12
+			while n0s > oldHigh:
+				n0s -= 12
 				n0 += ","
 
-		n1p = n0p + intervalToPitch[mode][interval]
-		oldLow = n0p
-		oldHigh = n1p
+		n1s = n0s + intervalToStep[mode][interval]
+		oldLow = n0s
+		oldHigh = n1s
 		low.append(n0)
-		n1 = pitchToLilyPond(tonality, n1p) # TODO
+		n1 = stepToLilyPond(tonality, n1s) # TODO
 		high.append(n1)
 
-		if (minLow == None) or (minLow > n0p):
-			minLow = n0p
-		if (maxLow == None) or (maxLow < n0p):
-			maxLow = n0p
-		if (maxHigh == None) or (maxHigh < n1p):
-			maxHigh = n1p
+		if (minLow == None) or (minLow > n0s):
+			minLow = n0s
+		if (maxLow == None) or (maxLow < n0s):
+			maxLow = n0s
+		if (maxHigh == None) or (maxHigh < n1s):
+			maxHigh = n1s
 
 	if octave == None:
 		m = (minLow + maxLow + 1) // 2
@@ -629,7 +629,7 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		else:
 			assert False
 
-		assert lilyPondToPitch(n0) <= lilyPondToPitch(n1)
+		assert lilyPondToStep(n0) <= lilyPondToStep(n1)
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
