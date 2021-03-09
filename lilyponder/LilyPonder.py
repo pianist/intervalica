@@ -3,6 +3,8 @@
 #
 # Alexander Shiryaev, 2021.03
 #
+# https://music.stackexchange.com/a/40047
+#
 
 import hashlib, subprocess, tempfile, os
 
