@@ -33,6 +33,7 @@ C = {
 	'IV'  : 'f',
 	'IV#' : 'fis',
 	'V'   : 'g',
+	'V#'  : 'gis',
 	'VIb' : 'as',
 	'VI'  : 'a',
 	'VIIb': 'bes',
