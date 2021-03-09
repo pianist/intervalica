@@ -6,7 +6,26 @@
 
 import hashlib, subprocess, tempfile, os
 
-intervalToPitch = { # halftones
+decodeStage = { # halftones
+	'major': {
+		'I': 0,
+		'I#': 1,
+		'IIb': 1,
+		'II': 2,
+		'II#': 3,
+		'III': 4,
+		'IV': 5,
+		'IV#': 6,
+		'V': 7,
+		'VIb': 8,
+		'VI': 9,
+		'VIIb': 10,
+		'VII': 11
+	}
+}
+decodeStage['minor'] = decodeStage['major'] # FIXME
+
+decodeInterval = { # halftones
 	'major': {
 		'p1': 0,
 		's2': 1, 'l2': 2, 'e2': 3,
@@ -18,7 +37,7 @@ intervalToPitch = { # halftones
 		'p8': 12
 	}
 }
-intervalToPitch['minor'] = intervalToPitch['major'] # FIXME
+decodeInterval['minor'] = decodeInterval['major'] # FIXME
 
 enToRu = {
 	'p1': 'ч1',
@@ -31,7 +50,10 @@ enToRu = {
 	'p8': 'ч8'
 }
 
-pitchToLilyPond0 = { # halftones
+decodeSeq = lambda mode, s: [ (decodeStage[mode][x], decodeInterval[mode][y], y) for x, y in [ xy.split('_') for xy in s.split('->') ] ]
+
+# for LilyPond
+encodeNote0 = { # halftones
 	'C': {
 		0: 'c',
 		1: 'des',
@@ -47,7 +69,7 @@ pitchToLilyPond0 = { # halftones
 		11: 'b'
 	},
 	'C#': {
-		0: 'bis,',
+		0: 'bis,', # NOTE: special case
 		1: 'cis',
 		2: 'd',
 		3: 'dis',
@@ -131,7 +153,7 @@ pitchToLilyPond0 = { # halftones
 		11: 'b'
 	},
 	'F#': {
-		0: 'bis,',
+		0: 'bis,', # NOTE: special case
 		1: 'cis',
 		2: 'd',
 		3: 'dis',
@@ -187,7 +209,7 @@ pitchToLilyPond0 = { # halftones
 		11: 'b'
 	},
 	'A': {
-		0: 'bis,',
+		0: 'bis,', # NOTE: special case
 		1: 'cis',
 		2: 'd',
 		3: 'dis',
@@ -230,6 +252,8 @@ pitchToLilyPond0 = { # halftones
 	}
 }
 
+encodeNote = lambda tonality, x: encodeNote0[tonality][x % 12] + "'"*(x // 12)
+
 # tonality -> pitch, mode
 decodeTonality = {
 	'C': (0, 'major'), 'C#': (1, 'major'),
@@ -268,275 +292,10 @@ tonalityToLilyPondKey = {
 	'b': 'b \\minor'
 }
 
-stageToLilyPond = {
-	'C': {
-		'I': "c",
-		'I#': "cis",
-		'IIb': "des",
-		'II': "d",
-		'II#': "dis",
-		'III': "e",
-		'IV': "f",
-		'IV#': "fis",
-		'V': "g",
-		'VIb': "as",
-		'VI': "a",
-		'VIIb': "bes",
-		'VII': "b"
-	},
-	'C#': {
-		'I': "cis",
-		'I#': "cisis",
-		'IIb': "d",
-		'II': "dis",
-		'II#': "disis",
-		'III': "eis",
-		'IV': "fis",
-		'IV#': "fisis",
-		'V': "gis",
-		'VIb': "a",
-		'VI': "ais",
-		'VIIb': "b",
-		'VII': "bis"
-	},
-	'Db': {
-		'I': "des",
-		'I#': "d",
-		'IIb': "eses",
-		'II': "es",
-		'II#': "e",
-		'III': "f",
-		'IV': "ges",
-		'IV#': "g",
-		'V': "as",
-		'VIb': "beses",
-		'VI': "bes",
-		'VIIb': "ces'",
-		'VII': "c'"
-	},
-	'D': {
-		'I': "d",
-		'I#': "dis",
-		'IIb': "es",
-		'II': "e",
-		'II#': "eis",
-		'III': "fis",
-		'IV': "g",
-		'IV#': "gis",
-		'V': "a",
-		'VIb': "bes",
-		'VI': "b",
-		'VIIb': "c'",
-		'VII': "cis'"
-	},
-	'Eb': {
-		'I': "es",
-		'I#': "e",
-		'IIb': "fes",
-		'II': "f",
-		'II#': "fis",
-		'III': "g",
-		'IV': "as",
-		'IV#': "a",
-		'V': "bes",
-		'VIb': "ces'",
-		'VI': "c'",
-		'VIIb': "des'",
-		'VII': "d'"
-	},
-	'E': {
-		'I': "e",
-		'I#': "eis",
-		'IIb': "f",
-		'II': "fis",
-		'II#': "fisis",
-		'III': "gis",
-		'IV': "a",
-		'IV#': "ais",
-		'V': "b",
-		'VIb': "c'",
-		'VI': "cis'",
-		'VIIb': "d'",
-		'VII': "dis'"
-	},
-	'F': {
-		'I': "f",
-		'I#': "fis",
-		'IIb': "ges",
-		'II': "g",
-		'II#': "gis",
-		'III': "a",
-		'IV': "bes",
-		'IV#': "b",
-		'V': "c'",
-		'VIb': "des'",
-		'VI': "d'",
-		'VIIb': "es'",
-		'VII': "e'"
-	},
-	'F#': {
-		'I': "fis",
-		'I#': "fisis",
-		'IIb': "g",
-		'II': "gis",
-		'II#': "gisis",
-		'III': "ais",
-		'IV': "b",
-		'IV#': "bis",
-		'V': "cis'",
-		'VIb': "d'",
-		'VI': "dis'",
-		'VIIb': "e'",
-		'VII': "eis'"
-	},
-	'Gb': {
-		'I': "ges",
-		'I#': "g",
-		'IIb': "ases",
-		'II': "as",
-		'II#': "a",
-		'III': "bes",
-		'IV': "ces'",
-		'IV#': "c'",
-		'V': "des'",
-		'VIb': "eses'",
-		'VI': "es'",
-		'VIIb': "fes'",
-		'VII': "f'"
-	},
-	'G': {
-		'I': "g",
-		'I#': "gis",
-		'IIb': "as",
-		'II': "a",
-		'II#': "ais",
-		'III': "b",
-		'IV': "c'",
-		'IV#': "cis'",
-		'V': "d'",
-		'VIb': "es'",
-		'VI': "e'",
-		'VIIb': "f'",
-		'VII': "fis'"
-	},
-	'Ab': {
-		'I': "as",
-		'I#': "a",
-		'IIb': "beses",
-		'II': "bes",
-		'II#': "b",
-		'III': "c'",
-		'IV': "des'",
-		'IV#': "d'",
-		'V': "es'",
-		'VIb': "fes'",
-		'VI': "f'",
-		'VIIb': "ges'",
-		'VII': "g'"
-	},
-	'A': {
-		'I': "a",
-		'I#': "ais",
-		'IIb': "bes",
-		'II': "b",
-		'II#': "bis",
-		'III': "cis'",
-		'IV': "d'",
-		'IV#': "dis'",
-		'V': "e'",
-		'VIb': "f'",
-		'VI': "fis'",
-		'VIIb': "g'",
-		'VII': "gis'"
-	},
-	'Bb': {
-		'I': "bes",
-		'I#': "b",
-		'IIb': "ces'",
-		'II': "c'",
-		'II#': "cis'",
-		'III': "d'",
-		'IV': "es'",
-		'IV#': "e'",
-		'V': "f'",
-		'VIb': "ges'",
-		'VI': "g'",
-		'VIIb': "as'",
-		'VII': "a'"
-	},
-	'B': {
-		'I': "b",
-		'I#': "bis",
-		'IIb': "c'",
-		'II': "cis'",
-		'II#': "cisis'",
-		'III': "dis'",
-		'IV': "e'",
-		'IV#': "eis'",
-		'V': "fis'",
-		'VIb': "g'",
-		'VI': "gis'",
-		'VIIb': "a'",
-		'VII': "ais'"
-	}
-}
-
-def lilyPondToPitch (x):
-	n = x.count("'") - x.count(",")
-	x = x.replace("'", '').replace(",", '')
-	return n * 12 + {
-		'ces': -1,
-		'c': 0,
-		'cis': 1,
-		'des': 1,
-		'cisis': 2,
-		'd': 2,
-		'eses': 2,
-		'dis': 3,
-		'es': 3,
-		'disis': 4,
-		'e': 4,
-		'fes': 4,
-		'eis': 5,
-		'f': 5,
-		'fis': 6,
-		'ges': 6,
-		'fisis': 7,
-		'g': 7,
-		'ases': 7,
-		'gis': 8,
-		'as': 8,
-		'gisis': 9,
-		'a': 9,
-		'beses': 9,
-		'ais': 10,
-		'bes': 10,
-		'b': 11,
-		'bis': 12
-	}[x]
-
-def lilyPondNormalize (x):
-	n = x.count("'") - x.count(",")
-	x = x.replace("'", '').replace(",", '')
-	if n > 0:
-		x += "'"*n
-	elif n < 0:
-		x += ","*(-n)
-	return x
-
-def pitchToLilyPond (tonality, x):
-	res = pitchToLilyPond0[tonality][x % 12]
-	n = x // 12
-	if n > 0:
-		res += "'"*n
-	elif n < 0:
-		res += ","*(-n)
-	return lilyPondNormalize(res)
-
 def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
-	mode = decodeTonality[tonality][1]
+	pitch, mode = decodeTonality[tonality]
 
-	seq = [ (stage, interval) for stage, interval in [ xy.split('_') for xy in s.split('->') ] ]
+	seq = decodeSeq(mode, s)
 
 	oldLow = None
 	oldHigh = None
@@ -545,44 +304,38 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	minLow = None
 	maxLow = None
 	maxHigh = None
-	for stage, interval in seq:
-		n0 = stageToLilyPond[tonality][stage]
-		n0p = lilyPondToPitch(n0)
+	for stage, interval, intervalRepr in seq:
+		n0 = pitch + stage
 
 		# low voice: relative
 		if oldLow != None:
-			while n0p - oldLow < -6:
-				n0p += 12
-				n0 += "'"
-			while n0p - oldLow >= 6:
-				n0p -= 12
-				n0 += ","
+			while n0 - oldLow < -6:
+				n0 += 12
+			while n0 - oldLow >= 6:
+				n0 -= 12
 
 		# prevent high voice jumps through low
 		if (oldHigh != None) and (oldLow != None):
 			# example: III_s6->VII_s3
-			while n0p + intervalToPitch[mode][interval] < oldLow:
-				n0p += 12
-				n0 += "'"
+			while n0 + interval < oldLow:
+				n0 += 12
 
 			# example: III_s3->VI_s7
-			while n0p > oldHigh:
-				n0p -= 12
-				n0 += ","
+			while n0 > oldHigh:
+				n0 -= 12
 
-		n1p = n0p + intervalToPitch[mode][interval]
-		oldLow = n0p
-		oldHigh = n1p
+		n1 = n0 + interval
+		oldLow = n0
+		oldHigh = n1
 		low.append(n0)
-		n1 = pitchToLilyPond(tonality, n1p) # TODO
 		high.append(n1)
 
-		if (minLow == None) or (minLow > n0p):
-			minLow = n0p
-		if (maxLow == None) or (maxLow < n0p):
-			maxLow = n0p
-		if (maxHigh == None) or (maxHigh < n1p):
-			maxHigh = n1p
+		if (minLow == None) or (minLow > n0):
+			minLow = n0
+		if (maxLow == None) or (maxLow < n0):
+			maxLow = n0
+		if (maxHigh == None) or (maxHigh < n1):
+			maxHigh = n1
 
 	if octave == None:
 		m = (minLow + maxLow + 1) // 2
@@ -593,19 +346,22 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 #		# octave = (12 + 11 + 6 - m) // 12
 #		octave = (12 + 11 + 5 - m) // 12
 
+	if pitch in (1, 6, 9): # NOTE: special case (bis,)
+		if minLow + octave * 12 <= 0:
+			octave += (12 - (minLow + octave * 12)) // 12
+	else:
+		if minLow + octave * 12 < 0:
+			octave += (11 - (minLow + octave * 12)) // 12
+
 	voices = [('voiceOne', []), ('voiceTwo', [])]
 	for i in range(len(seq)):
 		n0 = low[i]
 		n1 = high[i]
 
-		if octave > 0:
-			n0 += "'"*octave
-			n1 += "'"*octave
-		elif octave < 0:
-			n0 += ","*(-octave)
-			n1 += ","*(-octave)
+		n0 += octave * 12
+		n1 += octave * 12
 
-		intervalRepr = seq[i][1]
+		intervalRepr = seq[i][2]
 		if titles == None:
 			title = None
 		elif titles == 'en':
@@ -615,13 +371,14 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		else:
 			assert False
 
-		assert lilyPondToPitch(n0) <= lilyPondToPitch(n1)
+		assert n0 >= 0
+		assert n0 <= n1
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
-		notes = [lilyPondNormalize(x[0]) for x in voice[1]]
+		notes = [encodeNote(tonality, x[0]).replace(",'", "") for x in voice[1]]
 		if len(notes) > 1:
 			notes[0] = notes[0] + "2"
 		if len(notes) % 2 == 1:
