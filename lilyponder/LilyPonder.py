@@ -6,6 +6,41 @@
 
 import hashlib, subprocess, tempfile, os
 
+noteToStep0 = {'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11}
+noteToStep = lambda x: noteToStep0[x[0]] + x[1:].count('is') - x[1:].count('es') + (x.count("'") - x.count(",")) * 12
+
+noteToNum0 = {'c': 1, 'd': 3, 'e': 5, 'f': 0, 'g': 2, 'a': 4, 'b': 6}
+numToNote0 = {0: 'f', 1: 'c', 2: 'g', 3: 'd', 4: 'a', 5: 'e', 6: 'b'}
+
+noteToNum = lambda x: noteToNum0[x[0]] + (x[1:].count('is') - x[1:].count('es')) * 7
+
+def numToNote (x):
+	sharps, noteNum = divmod(x, 7)
+	y = numToNote0[noteNum]
+	if sharps > 0:
+		y += "is"*sharps
+	elif sharps < 0:
+		y += "es"*(-sharps)
+	return y
+
+def transpose (f, t, noteF):
+	spacesFT = noteToNum(t) - noteToNum(f)
+	numT = noteToNum(noteF) + spacesFT
+	noteT = numToNote(numT)
+
+	stepsF = noteToStep(noteF) - noteToStep(f)
+	stepsT = noteToStep(noteT) - noteToStep(t)
+
+	dSteps = stepsF - stepsT
+	assert dSteps % 12 == 0
+	octaves = dSteps // 12
+	if octaves > 0:
+		noteT += "'"*octaves
+	elif octaves < 0:
+		noteT += ","*(-octaves)
+
+	return noteT
+
 intervalToStep = { # halftones
 	'major': {
 		'p1': 0,
@@ -19,6 +54,19 @@ intervalToStep = { # halftones
 	}
 }
 intervalToStep['minor'] = intervalToStep['major'] # FIXME
+
+intervalToNum = {
+	'major': {
+		'p1': 0,
+		's2': -5, 'l2': 2, 'e2': 2 + 7,
+		's3': -3, 'l3': 4,
+		'd4': None, 'p4': -1, 'e4': None,
+		'd5': None, 'p5': 1, 'e5': None,
+		's6': -4, 'l6': 3,
+		'd7': -2 - 7, 's7': -2, 'l7': 5,
+		'p8': 0
+	}
+}
 
 enToRu = {
 	'p1': 'ч1',
@@ -41,7 +89,7 @@ stepToLilyPond0 = { # halftones
 		5: 'f',
 		6: 'fis',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'a',
 		10: 'bes',
 		11: 'b'
@@ -63,13 +111,13 @@ stepToLilyPond0 = { # halftones
 	'Db': {
 		0: 'c',
 		1: 'des',
-		2: 'eses',
-		3: 'es',
+		2: 'eeses',
+		3: 'ees',
 		4: 'e',
 		5: 'f',
 		6: 'ges',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'beses',
 		10: 'bes',
 		11: "ces'"
@@ -78,7 +126,7 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'cis',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'e',
 		5: 'eis',
 		6: 'fis',
@@ -92,12 +140,12 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'des',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'fes',
 		5: 'f',
 		6: 'fis',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'a',
 		10: 'bes',
 		11: "ces'"
@@ -120,7 +168,7 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'des',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'e',
 		5: 'f',
 		6: 'ges',
@@ -147,13 +195,13 @@ stepToLilyPond0 = { # halftones
 	'Gb': {
 		0: 'c',
 		1: 'des',
-		2: 'eses',
-		3: 'es',
+		2: 'eeses',
+		3: 'ees',
 		4: 'fes',
 		5: 'f',
 		6: 'ges',
-		7: 'ases',
-		8: 'as',
+		7: 'aeses',
+		8: 'aes',
 		9: 'a',
 		10: 'bes',
 		11: "ces'"
@@ -162,12 +210,12 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'cis',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'e',
 		5: 'f',
 		6: 'fis',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'a',
 		10: 'ais',
 		11: 'b'
@@ -176,12 +224,12 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'des',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'fes',
 		5: 'f',
 		6: 'ges',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'beses',
 		10: 'bes',
 		11: 'b'
@@ -204,12 +252,12 @@ stepToLilyPond0 = { # halftones
 		0: 'c',
 		1: 'cis',
 		2: 'd',
-		3: 'es',
+		3: 'ees',
 		4: 'e',
 		5: 'f',
 		6: 'ges',
 		7: 'g',
-		8: 'as',
+		8: 'aes',
 		9: 'a',
 		10: 'bes',
 		11: "ces'"
@@ -253,10 +301,10 @@ decodeTonality = {
 tonalityToLilyPondKey = {
 	'C': 'c \\major', 'C#': 'cis \\major',
 	'Db': 'des \\major', 'D': 'd \\major',
-	'Eb': 'es \\major', 'E': 'e \\major',
+	'Eb': 'ees \\major', 'E': 'e \\major',
 	'F': 'f \\major', 'F#': 'fis \\major',
 	'Gb': 'ges \\major', 'G': 'g \\major',
-	'Ab': 'as \\major', 'A': 'a \\major',
+	'Ab': 'aes \\major', 'A': 'a \\major',
 	'Bb': 'bes \\major', 'B': 'b \\major',
 
 	'c': 'c \\minor',
@@ -267,6 +315,7 @@ tonalityToLilyPondKey = {
 	'a': 'a \\minor',
 	'b': 'b \\minor'
 }
+
 
 stageToLilyPond = {
 	'C': {
@@ -280,7 +329,7 @@ stageToLilyPond = {
 		'IV#': "fis",
 		'V': "g",
 		'V#': "gis",
-		'VIb': "as",
+		'VIb': "aes",
 		'VI': "a",
 		'VIIb': "bes",
 		'VII': "b"
@@ -304,13 +353,13 @@ stageToLilyPond = {
 	'Db': {
 		'I': "des",
 		'I#': "d",
-		'IIb': "eses",
-		'II': "es",
+		'IIb': "eeses",
+		'II': "ees",
 		'II#': "e",
 		'III': "f",
 		'IV': "ges",
 		'IV#': "g",
-		'V': "as",
+		'V': "aes",
 		'V#': "a",
 		'VIb': "beses",
 		'VI': "bes",
@@ -320,7 +369,7 @@ stageToLilyPond = {
 	'D': {
 		'I': "d",
 		'I#': "dis",
-		'IIb': "es",
+		'IIb': "ees",
 		'II': "e",
 		'II#': "eis",
 		'III': "fis",
@@ -334,13 +383,13 @@ stageToLilyPond = {
 		'VII': "cis'"
 	},
 	'Eb': {
-		'I': "es",
+		'I': "ees",
 		'I#': "e",
 		'IIb': "fes",
 		'II': "f",
 		'II#': "fis",
 		'III': "g",
-		'IV': "as",
+		'IV': "aes",
 		'IV#': "a",
 		'V': "bes",
 		'V#': "b",
@@ -378,7 +427,7 @@ stageToLilyPond = {
 		'V#': "cis'",
 		'VIb': "des'",
 		'VI': "d'",
-		'VIIb': "es'",
+		'VIIb': "ees'",
 		'VII': "e'"
 	},
 	'F#': {
@@ -400,23 +449,23 @@ stageToLilyPond = {
 	'Gb': {
 		'I': "ges",
 		'I#': "g",
-		'IIb': "ases",
-		'II': "as",
+		'IIb': "aeses",
+		'II': "aes",
 		'II#': "a",
 		'III': "bes",
 		'IV': "ces'",
 		'IV#': "c'",
 		'V': "des'",
 		'V#': "d'",
-		'VIb': "eses'",
-		'VI': "es'",
+		'VIb': "eeses'",
+		'VI': "ees'",
 		'VIIb': "fes'",
 		'VII': "f'"
 	},
 	'G': {
 		'I': "g",
 		'I#': "gis",
-		'IIb': "as",
+		'IIb': "aes",
 		'II': "a",
 		'II#': "ais",
 		'III': "b",
@@ -424,13 +473,13 @@ stageToLilyPond = {
 		'IV#': "cis'",
 		'V': "d'",
 		'V#': "dis'",
-		'VIb': "es'",
+		'VIb': "ees'",
 		'VI': "e'",
 		'VIIb': "f'",
 		'VII': "fis'"
 	},
 	'Ab': {
-		'I': "as",
+		'I': "aes",
 		'I#': "a",
 		'IIb': "beses",
 		'II': "bes",
@@ -438,7 +487,7 @@ stageToLilyPond = {
 		'III': "c'",
 		'IV': "des'",
 		'IV#': "d'",
-		'V': "es'",
+		'V': "ees'",
 		'V#': "e'",
 		'VIb': "fes'",
 		'VI': "f'",
@@ -468,13 +517,13 @@ stageToLilyPond = {
 		'II': "c'",
 		'II#': "cis'",
 		'III': "d'",
-		'IV': "es'",
+		'IV': "ees'",
 		'IV#': "e'",
 		'V': "f'",
 		'V#': "fis'",
 		'VIb': "ges'",
 		'VI': "g'",
-		'VIIb': "as'",
+		'VIIb': "aes'",
 		'VII': "a'"
 	},
 	'B': {
@@ -495,41 +544,7 @@ stageToLilyPond = {
 	}
 }
 
-def lilyPondToStep (x):
-	n = x.count("'") - x.count(",")
-	x = x.replace("'", '').replace(",", '')
-	return n * 12 + {
-		'ces': -1,
-		'c': 0,
-		'cis': 1,
-		'des': 1,
-		'cisis': 2,
-		'd': 2,
-		'eses': 2,
-		'dis': 3,
-		'es': 3,
-		'disis': 4,
-		'e': 4,
-		'fes': 4,
-		'eis': 5,
-		'f': 5,
-		'fis': 6,
-		'ges': 6,
-		'fisis': 7,
-		'g': 7,
-		'ases': 7,
-		'gis': 8,
-		'as': 8,
-		'gisis': 9,
-		'a': 9,
-		'beses': 9,
-		'ais': 10,
-		'bes': 10,
-		'b': 11,
-		'bis': 12
-	}[x]
-
-def lilyPondNormalize (x):
+def lilyPondNormalizeOctaves (x):
 	n = x.count("'") - x.count(",")
 	x = x.replace("'", '').replace(",", '')
 	if n > 0:
@@ -545,7 +560,27 @@ def stepToLilyPond (tonality, x):
 		res += "'"*n
 	elif n < 0:
 		res += ","*(-n)
-	return lilyPondNormalize(res)
+	return lilyPondNormalizeOctaves(res)
+
+def addInterval (mode, n0, interval):
+	n0s = noteToStep(n0)
+	n0n = noteToNum(n0)
+
+	n1s = n0s + intervalToStep[mode][interval]
+	n1n = n0n + intervalToNum[mode][interval]
+
+	n1 = numToNote(n1n)
+
+	dSteps = n1s - noteToStep(n1)
+
+	assert dSteps % 12 == 0
+	octaves = dSteps // 12
+	if octaves > 0:
+		n1 += "'"*octaves
+	elif octaves < 0:
+		n1 += ","*(-octaves)
+
+	return n1
 
 def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	mode = decodeTonality[tonality][1]
@@ -561,7 +596,7 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	maxHigh = None
 	for stage, interval in seq:
 		n0 = stageToLilyPond[tonality][stage]
-		n0s = lilyPondToStep(n0)
+		n0s = noteToStep(n0)
 
 		# low voice: relative
 		if oldLow != None:
@@ -588,7 +623,8 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		oldLow = n0s
 		oldHigh = n1s
 		low.append(n0)
-		n1 = stepToLilyPond(tonality, n1s) # TODO
+		# n1 = stepToLilyPond(tonality, n1s)
+		n1 = addInterval(mode, n0, interval)
 		high.append(n1)
 
 		if (minLow == None) or (minLow > n0s):
@@ -629,13 +665,13 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		else:
 			assert False
 
-		assert lilyPondToStep(n0) <= lilyPondToStep(n1)
+		assert noteToStep(n0) <= noteToStep(n1)
 		voices[0][1].append((n1, title))
 		voices[1][1].append((n0, None))
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
-		notes = [lilyPondNormalize(x[0]) for x in voice[1]]
+		notes = [lilyPondNormalizeOctaves(x[0]) for x in voice[1]]
 		if len(notes) > 1:
 			notes[0] = notes[0] + "2"
 		if len(notes) % 2 == 1:
