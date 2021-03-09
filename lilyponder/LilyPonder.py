@@ -25,23 +25,21 @@ def numToNote (x):
 		y += "es"*(-sharps)
 	return y
 
-def transpose (f, t, noteF):
-	spacesFT = noteToNum(t) - noteToNum(f)
-	numT = noteToNum(noteF) + spacesFT
-	noteT = numToNote(numT)
-
-	stepsF = noteToStep(noteF) - noteToStep(f)
-	stepsT = noteToStep(noteT) - noteToStep(t)
-
-	dSteps = stepsF - stepsT
-	assert dSteps % 12 == 0
-	octaves = dSteps // 12
+def stepNumToNote (step, num):
+	note = numToNote(num)
+	dStep = step - noteToStep(note)
+	assert dStep % 12 == 0
+	octaves = dStep // 12
 	if octaves > 0:
-		noteT += "'"*octaves
+		note += "'"*octaves
 	elif octaves < 0:
-		noteT += ","*(-octaves)
+		note += ","*(-octaves)
+	return note
 
-	return noteT
+def transpose (f, t, noteF):
+	num = noteToNum(noteF) + noteToNum(t) - noteToNum(f)
+	step = noteToStep(noteF) + noteToStep(t) - noteToStep(f)
+	return stepNumToNote(step, num)
 
 intervalToStep = { # halftones
 	'major': {
@@ -62,8 +60,8 @@ intervalToNum = {
 		'p1': 0,
 		's2': -5, 'l2': 2, 'e2': 2 + 7,
 		's3': -3, 'l3': 4,
-		'd4': None, 'p4': -1, 'e4': None,
-		'd5': None, 'p5': 1, 'e5': None,
+		'd4': None, 'p4': -1, 'e4': None, # TODO
+		'd5': None, 'p5': 1, 'e5': None, # TODO
 		's6': -4, 'l6': 3,
 		'd7': -2 - 7, 's7': -2, 'l7': 5,
 		'p8': 0
@@ -81,222 +79,22 @@ enToRu = {
 	'p8': 'ч8'
 }
 
-stepToLilyPond0 = { # halftones
-	'C': {
-		0: 'c',
-		1: 'des',
-		2: 'd',
-		3: 'dis',
-		4: 'e',
-		5: 'f',
-		6: 'fis',
-		7: 'g',
-		8: 'aes',
-		9: 'a',
-		10: 'bes',
-		11: 'b'
-	},
-	'C#': {
-		0: 'bis,',
-		1: 'cis',
-		2: 'd',
-		3: 'dis',
-		4: 'disis',
-		5: 'eis',
-		6: 'fis',
-		7: 'fisis',
-		8: 'gis',
-		9: 'a',
-		10: 'ais',
-		11: 'b'
-	},
-	'Db': {
-		0: 'c',
-		1: 'des',
-		2: 'eeses',
-		3: 'ees',
-		4: 'e',
-		5: 'f',
-		6: 'ges',
-		7: 'g',
-		8: 'aes',
-		9: 'beses',
-		10: 'bes',
-		11: "ces'"
-	},
-	'D': {
-		0: 'c',
-		1: 'cis',
-		2: 'd',
-		3: 'ees',
-		4: 'e',
-		5: 'eis',
-		6: 'fis',
-		7: 'g',
-		8: 'gis',
-		9: 'a',
-		10: 'bes',
-		11: 'b'
-	},
-	'Eb': {
-		0: 'c',
-		1: 'des',
-		2: 'd',
-		3: 'ees',
-		4: 'fes',
-		5: 'f',
-		6: 'fis',
-		7: 'g',
-		8: 'aes',
-		9: 'a',
-		10: 'bes',
-		11: "ces'"
-	},
-	'E': {
-		0: 'c',
-		1: 'cis',
-		2: 'd',
-		3: 'dis',
-		4: 'e',
-		5: 'f',
-		6: 'fis',
-		7: 'fisis',
-		8: 'gis',
-		9: 'a',
-		10: 'ais',
-		11: 'b'
-	},
-	'F': {
-		0: 'c',
-		1: 'des',
-		2: 'd',
-		3: 'ees',
-		4: 'e',
-		5: 'f',
-		6: 'ges',
-		7: 'g',
-		8: 'gis',
-		9: 'a',
-		10: 'bes',
-		11: 'b'
-	},
-	'F#': {
-		0: 'bis,',
-		1: 'cis',
-		2: 'd',
-		3: 'dis',
-		4: 'e',
-		5: 'eis',
-		6: 'fis',
-		7: 'g',
-		8: 'gis',
-		9: 'gisis',
-		10: 'ais',
-		11: 'b'
-	},
-	'Gb': {
-		0: 'c',
-		1: 'des',
-		2: 'eeses',
-		3: 'ees',
-		4: 'fes',
-		5: 'f',
-		6: 'ges',
-		7: 'aeses',
-		8: 'aes',
-		9: 'a',
-		10: 'bes',
-		11: "ces'"
-	},
-	'G': {
-		0: 'c',
-		1: 'cis',
-		2: 'd',
-		3: 'ees',
-		4: 'e',
-		5: 'f',
-		6: 'fis',
-		7: 'g',
-		8: 'aes',
-		9: 'a',
-		10: 'ais',
-		11: 'b'
-	},
-	'Ab': {
-		0: 'c',
-		1: 'des',
-		2: 'd',
-		3: 'ees',
-		4: 'fes',
-		5: 'f',
-		6: 'ges',
-		7: 'g',
-		8: 'aes',
-		9: 'beses',
-		10: 'bes',
-		11: 'b'
-	},
-	'A': {
-		0: 'bis,',
-		1: 'cis',
-		2: 'd',
-		3: 'dis',
-		4: 'e',
-		5: 'f',
-		6: 'fis',
-		7: 'g',
-		8: 'gis',
-		9: 'a',
-		10: 'bes',
-		11: 'b'
-	},
-	'Bb': {
-		0: 'c',
-		1: 'cis',
-		2: 'd',
-		3: 'ees',
-		4: 'e',
-		5: 'f',
-		6: 'ges',
-		7: 'g',
-		8: 'aes',
-		9: 'a',
-		10: 'bes',
-		11: "ces'"
-	},
-	'B': {
-		0: 'c',
-		1: 'cis',
-		2: 'cisis',
-		3: 'dis',
-		4: 'e',
-		5: 'eis',
-		6: 'fis',
-		7: 'g',
-		8: 'gis',
-		9: 'a',
-		10: 'ais',
-		11: 'b'
-	}
-}
+tonalityMode = {
+	'C': 'major', 'C#': 'major',
+	'Db': 'major', 'D': 'major',
+	'Eb': 'major', 'E': 'major',
+	'F': 'major', 'F#': 'major',
+	'Gb': 'major', 'G': 'major',
+	'Ab': 'major', 'A': 'major',
+	'Bb': 'major', 'B': 'major',
 
-# tonality -> step, mode
-decodeTonality = {
-	'C': (0, 'major'), 'C#': (1, 'major'),
-	'Db': (1, 'major'), 'D': (2, 'major'),
-	'Eb': (3, 'major'), 'E': (4, 'major'),
-	'F': (5, 'major'), 'F#': (6, 'major'),
-	'Gb': (6, 'major'), 'G': (7, 'major'),
-	'Ab': (8, 'major'), 'A': (9, 'major'),
-	'Bb': (10, 'major'), 'B': (11, 'major'),
-
-	'c': (0, 'minor'),
-	'd': (2, 'minor'),
-	'e': (4, 'minor'),
-	'f': (5, 'minor'),
-	'g': (7, 'minor'),
-	'a': (9, 'minor'),
-	'b': (11, 'minor')
+	'c': 'minor',
+	'd': 'minor',
+	'e': 'minor',
+	'f': 'minor',
+	'g': 'minor',
+	'a': 'minor',
+	'b': 'minor'
 }
 
 # tonality -> LilyPond key
@@ -317,7 +115,6 @@ tonalityToLilyPondKey = {
 	'a': 'a \\minor',
 	'b': 'b \\minor'
 }
-
 
 stageToLilyPond = {
 	'C': {
@@ -555,15 +352,6 @@ def lilyPondNormalizeOctaves (x):
 		x += ","*(-n)
 	return x
 
-def stepToLilyPond (tonality, x):
-	res = stepToLilyPond0[tonality][x % 12]
-	n = x // 12
-	if n > 0:
-		res += "'"*n
-	elif n < 0:
-		res += ","*(-n)
-	return lilyPondNormalizeOctaves(res)
-
 def addInterval (mode, n0, interval):
 	n0s = noteToStep(n0)
 	n0n = noteToNum(n0)
@@ -571,21 +359,10 @@ def addInterval (mode, n0, interval):
 	n1s = n0s + intervalToStep[mode][interval]
 	n1n = n0n + intervalToNum[mode][interval]
 
-	n1 = numToNote(n1n)
-
-	dSteps = n1s - noteToStep(n1)
-
-	assert dSteps % 12 == 0
-	octaves = dSteps // 12
-	if octaves > 0:
-		n1 += "'"*octaves
-	elif octaves < 0:
-		n1 += ","*(-octaves)
-
-	return n1
+	return stepNumToNote(n1s, n1n)
 
 def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
-	mode = decodeTonality[tonality][1]
+	mode = tonalityMode[tonality]
 
 	seq = [ (stage, interval) for stage, interval in [ xy.split('_') for xy in s.split('->') ] ]
 
@@ -625,7 +402,6 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		oldLow = n0s
 		oldHigh = n1s
 		low.append(n0)
-		# n1 = stepToLilyPond(tonality, n1s)
 		n1 = addInterval(mode, n0, interval)
 		high.append(n1)
 
@@ -703,9 +479,9 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 		tonality, s = s.split()
 
 	if tonality == '*dur':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in decodeTonality.items() if v[1] == 'major' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in tonalityMode.items() if v == 'major' ]
 	elif tonality == '*moll':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in decodeTonality.items() if v[1] == 'minor' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in tonalityMode.items() if v == 'minor' ]
 	else:
 		r = ( strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave), )
 

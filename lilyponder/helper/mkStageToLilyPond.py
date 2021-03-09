@@ -4,20 +4,20 @@
 # Alexander Shiryaev, 2021.03
 #
 
-import subprocess
+import transpose
 
 tonalityLilyPond = {
 	'C': 'c',
 	'C#': 'cis',
 	'Db': 'des',
 	'D': 'd',
-	'Eb': 'es',
+	'Eb': 'ees',
 	'E': 'e',
 	'F': 'f',
 	'F#': 'fis',
 	'Gb': 'ges',
 	'G': 'g',
-	'Ab': 'as',
+	'Ab': 'aes',
 	'A': 'a',
 	'Bb': 'bes',
 	'B': 'b'
@@ -34,7 +34,7 @@ C = {
 	'IV#' : 'fis',
 	'V'   : 'g',
 	'V#'  : 'gis',
-	'VIb' : 'as',
+	'VIb' : 'aes',
 	'VI'  : 'a',
 	'VIIb': 'bes',
 	'VII' : 'b'
@@ -54,13 +54,13 @@ def gen ():
 	input = input.encode('ascii')
 
 	for tonality in tonalityLilyPond.keys():
-		res = subprocess.run(["ly", "transpose c %s" % (tonalityLilyPond[tonality],)], input=input, stdout=subprocess.PIPE)
-		assert res.returncode == 0
-		out = res.stdout.decode('ascii')[1:-1].split()
 		d = {}
 		i = 0
-		for stage in stages:
-			d[stage] = out[i]
+		for i in range(len(stages)):
+			stage = stages[i]
+			note = notes[i]
+			noteTransposed = transpose.transpose('c', tonalityLilyPond[tonality], note)
+			d[stage] = noteTransposed
 			i += 1
 		r[tonality] = d
 
