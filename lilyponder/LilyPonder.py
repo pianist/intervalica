@@ -36,12 +36,9 @@ def stepNumToNote (step, num):
 		note += ","*(-octaves)
 	return note
 
-def transpose (f, t, noteF):
-	num = noteToNum(noteF) + noteToNum(t) - noteToNum(f)
-	step = noteToStep(noteF) + noteToStep(t) - noteToStep(f)
-	return stepNumToNote(step, num)
+transpose = lambda f, t, noteF: stepNumToNote(noteToStep(noteF) + noteToStep(t) - noteToStep(f), noteToNum(noteF) + noteToNum(t) - noteToNum(f))
 
-intervalToStep = { # halftones
+intervalToStep = {
 	'major': {
 		'p1': 0,
 		's2': 1, 'l2': 2, 'e2': 3,
@@ -53,7 +50,6 @@ intervalToStep = { # halftones
 		'p8': 12
 	}
 }
-intervalToStep['minor'] = intervalToStep['major'] # FIXME
 
 intervalToNum = {
 	'major': {
@@ -68,18 +64,45 @@ intervalToNum = {
 	}
 }
 
-enToRu = {
-	'p1': 'ч1',
-	's2': 'м2', 'l2': 'б2', 'e2': 'ув2',
-	's3': 'м3', 'l3': 'б3',
-	'd4': 'ум4', 'p4': 'ч4', 'e4': 'ув4',
-	'd5': 'ум5', 'p5': 'ч5', 'e5': 'ув5',
-	's6': 'м6', 'l6': 'б6',
-	'd7': 'ум7', 's7': 'м7', 'l7': 'б7',
-	'p8': 'ч8'
+stageToStep = {
+	'major': {
+		'I': 0,
+		'I#': 1,
+		'IIb': 1,
+		'II': 2,
+		'II#': 3,
+		'III': 4,
+		'IV': 5,
+		'IV#': 6,
+		'V': 7,
+		'V#': 8,
+		'VIb': 8,
+		'VI': 9,
+		'VIIb': 10,
+		'VII': 11
+	}
 }
 
-tonalityMode = {
+stageToNum = {
+	'major': {
+		'I': 1 - 1,
+		'I#': 8 - 1,
+		'IIb': -4 - 1,
+		'II': 3 - 1,
+		'II#': 10 - 1,
+		'III': 5 - 1,
+		'IV': 0 - 1,
+		'IV#': 7 - 1,
+		'V': 2 - 1,
+		'V#': 9 - 1,
+		'VIb': -3 - 1,
+		'VI': 4 - 1,
+		'VIIb': -1 - 1,
+		'VII': 6 - 1
+	}
+}
+
+tonalityToMode = {
 	'C': 'major', 'C#': 'major',
 	'Db': 'major', 'D': 'major',
 	'Eb': 'major', 'E': 'major',
@@ -97,250 +120,35 @@ tonalityMode = {
 	'b': 'minor'
 }
 
-# tonality -> LilyPond key
-tonalityToLilyPondKey = {
-	'C': 'c \\major', 'C#': 'cis \\major',
-	'Db': 'des \\major', 'D': 'd \\major',
-	'Eb': 'ees \\major', 'E': 'e \\major',
-	'F': 'f \\major', 'F#': 'fis \\major',
-	'Gb': 'ges \\major', 'G': 'g \\major',
-	'Ab': 'aes \\major', 'A': 'a \\major',
-	'Bb': 'bes \\major', 'B': 'b \\major',
+tonalityToNote = {
+	'C': 'c', 'C#': 'cis',
+	'Db': 'des', 'D': 'd',
+	'Eb': 'ees', 'E': 'e',
+	'F': 'f', 'F#': 'fis',
+	'Gb': 'ges', 'G': 'g',
+	'Ab': 'aes', 'A': 'a',
+	'Bb': 'bes', 'B': 'b',
 
-	'c': 'c \\minor',
-	'd': 'd \\minor',
-	'e': 'e \\minor',
-	'f': 'f \\minor',
-	'g': 'g \\minor',
-	'a': 'a \\minor',
-	'b': 'b \\minor'
+	'c': 'c',
+	'd': 'd',
+	'e': 'e',
+	'f': 'f',
+	'g': 'g',
+	'a': 'a',
+	'b': 'b'
 }
 
-stageToLilyPond = {
-	'C': {
-		'I': "c",
-		'I#': "cis",
-		'IIb': "des",
-		'II': "d",
-		'II#': "dis",
-		'III': "e",
-		'IV': "f",
-		'IV#': "fis",
-		'V': "g",
-		'V#': "gis",
-		'VIb': "aes",
-		'VI': "a",
-		'VIIb': "bes",
-		'VII': "b"
-	},
-	'C#': {
-		'I': "cis",
-		'I#': "cisis",
-		'IIb': "d",
-		'II': "dis",
-		'II#': "disis",
-		'III': "eis",
-		'IV': "fis",
-		'IV#': "fisis",
-		'V': "gis",
-		'V#': "gisis",
-		'VIb': "a",
-		'VI': "ais",
-		'VIIb': "b",
-		'VII': "bis"
-	},
-	'Db': {
-		'I': "des",
-		'I#': "d",
-		'IIb': "eeses",
-		'II': "ees",
-		'II#': "e",
-		'III': "f",
-		'IV': "ges",
-		'IV#': "g",
-		'V': "aes",
-		'V#': "a",
-		'VIb': "beses",
-		'VI': "bes",
-		'VIIb': "ces'",
-		'VII': "c'"
-	},
-	'D': {
-		'I': "d",
-		'I#': "dis",
-		'IIb': "ees",
-		'II': "e",
-		'II#': "eis",
-		'III': "fis",
-		'IV': "g",
-		'IV#': "gis",
-		'V': "a",
-		'V#': "ais",
-		'VIb': "bes",
-		'VI': "b",
-		'VIIb': "c'",
-		'VII': "cis'"
-	},
-	'Eb': {
-		'I': "ees",
-		'I#': "e",
-		'IIb': "fes",
-		'II': "f",
-		'II#': "fis",
-		'III': "g",
-		'IV': "aes",
-		'IV#': "a",
-		'V': "bes",
-		'V#': "b",
-		'VIb': "ces'",
-		'VI': "c'",
-		'VIIb': "des'",
-		'VII': "d'"
-	},
-	'E': {
-		'I': "e",
-		'I#': "eis",
-		'IIb': "f",
-		'II': "fis",
-		'II#': "fisis",
-		'III': "gis",
-		'IV': "a",
-		'IV#': "ais",
-		'V': "b",
-		'V#': "bis",
-		'VIb': "c'",
-		'VI': "cis'",
-		'VIIb': "d'",
-		'VII': "dis'"
-	},
-	'F': {
-		'I': "f",
-		'I#': "fis",
-		'IIb': "ges",
-		'II': "g",
-		'II#': "gis",
-		'III': "a",
-		'IV': "bes",
-		'IV#': "b",
-		'V': "c'",
-		'V#': "cis'",
-		'VIb': "des'",
-		'VI': "d'",
-		'VIIb': "ees'",
-		'VII': "e'"
-	},
-	'F#': {
-		'I': "fis",
-		'I#': "fisis",
-		'IIb': "g",
-		'II': "gis",
-		'II#': "gisis",
-		'III': "ais",
-		'IV': "b",
-		'IV#': "bis",
-		'V': "cis'",
-		'V#': "cisis'",
-		'VIb': "d'",
-		'VI': "dis'",
-		'VIIb': "e'",
-		'VII': "eis'"
-	},
-	'Gb': {
-		'I': "ges",
-		'I#': "g",
-		'IIb': "aeses",
-		'II': "aes",
-		'II#': "a",
-		'III': "bes",
-		'IV': "ces'",
-		'IV#': "c'",
-		'V': "des'",
-		'V#': "d'",
-		'VIb': "eeses'",
-		'VI': "ees'",
-		'VIIb': "fes'",
-		'VII': "f'"
-	},
-	'G': {
-		'I': "g",
-		'I#': "gis",
-		'IIb': "aes",
-		'II': "a",
-		'II#': "ais",
-		'III': "b",
-		'IV': "c'",
-		'IV#': "cis'",
-		'V': "d'",
-		'V#': "dis'",
-		'VIb': "ees'",
-		'VI': "e'",
-		'VIIb': "f'",
-		'VII': "fis'"
-	},
-	'Ab': {
-		'I': "aes",
-		'I#': "a",
-		'IIb': "beses",
-		'II': "bes",
-		'II#': "b",
-		'III': "c'",
-		'IV': "des'",
-		'IV#': "d'",
-		'V': "ees'",
-		'V#': "e'",
-		'VIb': "fes'",
-		'VI': "f'",
-		'VIIb': "ges'",
-		'VII': "g'"
-	},
-	'A': {
-		'I': "a",
-		'I#': "ais",
-		'IIb': "bes",
-		'II': "b",
-		'II#': "bis",
-		'III': "cis'",
-		'IV': "d'",
-		'IV#': "dis'",
-		'V': "e'",
-		'V#': "eis'",
-		'VIb': "f'",
-		'VI': "fis'",
-		'VIIb': "g'",
-		'VII': "gis'"
-	},
-	'Bb': {
-		'I': "bes",
-		'I#': "b",
-		'IIb': "ces'",
-		'II': "c'",
-		'II#': "cis'",
-		'III': "d'",
-		'IV': "ees'",
-		'IV#': "e'",
-		'V': "f'",
-		'V#': "fis'",
-		'VIb': "ges'",
-		'VI': "g'",
-		'VIIb': "aes'",
-		'VII': "a'"
-	},
-	'B': {
-		'I': "b",
-		'I#': "bis",
-		'IIb': "c'",
-		'II': "cis'",
-		'II#': "cisis'",
-		'III': "dis'",
-		'IV': "e'",
-		'IV#': "eis'",
-		'V': "fis'",
-		'V#': "fisis'",
-		'VIb': "g'",
-		'VI': "gis'",
-		'VIIb': "a'",
-		'VII': "ais'"
-	}
+stageToNote = lambda tNote, mode, stage: stepNumToNote(stageToStep[mode][stage] + noteToStep(tNote), stageToNum[mode][stage] + noteToNum(tNote))
+
+enToRu = {
+	'p1': 'ч1',
+	's2': 'м2', 'l2': 'б2', 'e2': 'ув2',
+	's3': 'м3', 'l3': 'б3',
+	'd4': 'ум4', 'p4': 'ч4', 'e4': 'ув4',
+	'd5': 'ум5', 'p5': 'ч5', 'e5': 'ув5',
+	's6': 'м6', 'l6': 'б6',
+	'd7': 'ум7', 's7': 'м7', 'l7': 'б7',
+	'p8': 'ч8'
 }
 
 def lilyPondNormalizeOctaves (x):
@@ -362,7 +170,8 @@ def addInterval (mode, n0, interval):
 	return stepNumToNote(n1s, n1n)
 
 def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
-	mode = tonalityMode[tonality]
+	mode = tonalityToMode[tonality]
+	tonalityNote = tonalityToNote[tonality]
 
 	seq = [ (stage, interval) for stage, interval in [ xy.split('_') for xy in s.split('->') ] ]
 
@@ -374,7 +183,7 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	maxLow = None
 	maxHigh = None
 	for stage, interval in seq:
-		n0 = stageToLilyPond[tonality][stage]
+		n0 = stageToNote(tonalityNote, mode, stage)
 		n0s = noteToStep(n0)
 
 		# low voice: relative
@@ -459,10 +268,10 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 				notes[i] += '^"%s"' % (voice[1][i][1],)
 		r.append("""		\\new Voice
 			{
-				\\key %s
+				\\key %s \\%s
 				\\%s
 				%s
-			}""" % (tonalityToLilyPondKey[tonality], voice[0], ' '.join(notes)))
+			}""" % (tonalityNote, mode, voice[0], ' '.join(notes)))
 	r.append("	>>")
 	if debug:
 		debugStr = tonality + ' ' + s.replace('->', ' → ')
@@ -479,9 +288,9 @@ def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
 		tonality, s = s.split()
 
 	if tonality == '*dur':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in tonalityMode.items() if v == 'major' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'major' ]
 	elif tonality == '*moll':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, v in tonalityMode.items() if v == 'minor' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'minor' ]
 	else:
 		r = ( strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave), )
 
