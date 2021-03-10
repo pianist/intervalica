@@ -151,7 +151,7 @@ enToRu = {
 	'p8': 'ч8'
 }
 
-def lilyPondNormalizeOctaves (x):
+def normalizeOctaves (x):
 	n = x.count("'") - x.count(",")
 	x = x.replace("'", '').replace(",", '')
 	if n > 0:
@@ -258,7 +258,7 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
-		notes = [lilyPondNormalizeOctaves(x[0]) for x in voice[1]]
+		notes = [normalizeOctaves(x[0]) for x in voice[1]]
 		if len(notes) > 1:
 			notes[0] = notes[0] + "2"
 		if len(notes) % 2 == 1:
