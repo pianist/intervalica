@@ -57,7 +57,7 @@ intervalToNum = {
 		's2': -5, 'l2': 2, 'e2': 2 + 7,
 		's3': -3, 'l3': 4,
 		'd4': None, 'p4': -1, 'e4': None, # TODO
-		'd5': None, 'p5': 1, 'e5': None, # TODO
+		'd5': -6, 'p5': 1, 'e5': None, # TODO
 		's6': -4, 'l6': 3,
 		'd7': -2 - 7, 's7': -2, 'l7': 5,
 		'p8': 0
