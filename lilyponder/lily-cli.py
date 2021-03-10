@@ -46,7 +46,7 @@ def main ():
 				break
 
 	if s == '-':
-		ss = [ s.rstrip() for s in sys.stdin.readlines() if s != '\n' ]
+		ss = [ s.strip() for s in sys.stdin.readlines() if s.strip() != '' ]
 	else:
 		ss = (s,)
 
