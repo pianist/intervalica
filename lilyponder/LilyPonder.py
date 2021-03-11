@@ -64,7 +64,7 @@ intervalToNum = {
 	}
 }
 
-stageToStep = {
+degreeToStep = {
 	'major': {
 		'I': 0,
 		'I#': 1,
@@ -83,7 +83,7 @@ stageToStep = {
 	}
 }
 
-stageToNum = {
+degreeToNum = {
 	'major': {
 		'I': 1 - 1,
 		'I#': 8 - 1,
@@ -138,7 +138,7 @@ tonalityToNote = {
 	'b': 'b'
 }
 
-stageToNote = lambda tNote, mode, stage: stepNumToNote(stageToStep[mode][stage] + noteToStep(tNote), stageToNum[mode][stage] + noteToNum(tNote))
+degreeToNote = lambda tNote, mode, degree: stepNumToNote(degreeToStep[mode][degree] + noteToStep(tNote), degreeToNum[mode][degree] + noteToNum(tNote))
 
 enToRu = {
 	'p1': 'ч1',
@@ -173,7 +173,7 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	mode = tonalityToMode[tonality]
 	tonalityNote = tonalityToNote[tonality]
 
-	seq = [ (stage, interval) for stage, interval in [ xy.split('_') for xy in s.split('->') ] ]
+	seq = [ (degree, interval) for degree, interval in [ xy.split('_') for xy in s.split('->') ] ]
 
 	oldLow = None
 	oldHigh = None
@@ -182,8 +182,8 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	minLow = None
 	maxLow = None
 	maxHigh = None
-	for stage, interval in seq:
-		n0 = stageToNote(tonalityNote, mode, stage)
+	for degree, interval in seq:
+		n0 = degreeToNote(tonalityNote, mode, degree)
 		n0s = noteToStep(n0)
 
 		# low voice: relative

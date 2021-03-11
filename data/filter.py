@@ -27,7 +27,7 @@ def main ():
 						print("%s->%s" % (old, x))
 				old = x
 	else:
-		print("usage: %s stage_interval" % (sys.argv[0],))
+		print("usage: %s degree_interval" % (sys.argv[0],))
 
 if __name__ == '__main__':
 	main()
