@@ -41,3 +41,14 @@ II_s6->VIb_e4->V_l6->IV_e4->III_s6->II_d5->III_s3->VI_s7->VII_d5->I_l3->II_p4->I
 
 I_l3->VI_s6->VIb_e2->V_p4->V_l6
 VIb_e2->V_p4->IV_l6->IV_s3->III_s3
+I_p8->VIb_e2->V_p4->V_p5->I_l3
+VII_d7->I_p5->II_l6->III_s6->IV_l6->VIb_e2->V_p4
+VIb_e5->V_l6->III_s3->III_d4->III_s3->VII_d5->I_l3
+VIb_e2->V_p4->V_l6->IV_e4->III_s6->VIb_e5->V_l6
+V_l6->VIb_e2->V_p4->VII_d5->I_l3->VIb_e5->V_l6
+I_l3->VIb_e5->V_l6->VII_d5->I_l3->III_d4->III_s3->I_p8
+III_s3->II_s3->I_l3->VIb_e5->V_l6->I_l2->VII_s3->VII_d7->I_p5
+I_l3->VI_s6->VIb_e5->V_l6->III_s6->VIb_e2->V_p4->III_p8->V_p5->V_l6
+V_l6->III_d4->III_s3->I_l6->I_l2->VII_d7->I_p5->IV_e4->III_s6
+VI_s6->VIb_e2->V_p4->III_s3->I_l6->VII_d7->I_p5->VIb_e5->V_l6
+VIb_e2->V_p4->II_s3->VII_d7->I_p5->IV_l2->III_s6->III_d4->III_s3->I_p8
