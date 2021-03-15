@@ -42,6 +42,10 @@ def str2fn_major (s):
 					f = 'D'
 				else:
 					f = 'S'
+			elif x in (('IV', 's3'), ('VIb', 'l6')):
+				# IV_s3 и VIb_l6 после T (или S) считаем S
+				if prevF in ('T', 'S'):
+					f = 'S'
 			elif x == ('II', 's3'):
 				# терция II_s3 — или D, или S, или Sh. По возможности D скорее ставим
 				f = 'D' # 'D' | 'S' | 'Sh'
@@ -49,6 +53,14 @@ def str2fn_major (s):
 				if prevF == None:
 					# секста из субдоминанты, до неё ничего нет, можно сразу считать S
 					f = 'S'
+				elif prevF == 'T':
+					# V_l6->VI_s6->IV_l6->V_l3->III_s6->IV_l2->III_s3->II_l6->I_p8
+					# тут VI_s6 явно S, так как идёт после Т и из трезвучия S
+					f = 'S'
+			elif x == ('I', 's6'):
+				# I_s6 считаем D, так как до того было D
+				if prevF == 'D':
+					f = 'D'
 			elif x == ('I', 'l6'):
 				if prevF == 'T':
 					# I_l6 — секста из S, до неё T идёт, потому сразу S
@@ -91,6 +103,11 @@ def str2fn_major (s):
 				# VII_d7 — D вполне тут в тему, так как дальше T типичная
 				# VII_d7->I_p5 — типичная D
 				f = 'D'
+		elif x == ('IV', 'l6'):
+			if f == None:
+				if (i > 0) and (ff[i-1] == 'S') and (i + 1 < len(seq)) and (ff[i+1] == 'D'):
+					# IV_l6 — D, между S и D уже можно на D
+					f = 'D'
 		ff[i] = f
 		i += 1
 
