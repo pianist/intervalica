@@ -14,45 +14,47 @@ def main ():
 	tonality = None
 	debug = False
 	titles = None
+	functions = False
 	outputFormat = None
 
 	outputFormatsImage = ('pdf', 'svg', 'png')
 	outputFormatsSound = ('midi', 'wav', 'opus')
 
-	if len(args) > 0:
-		while len(args) > 0:
-			arg = args.pop(0)
-			if arg == '-d':
-				debug = True
-			elif arg == '-t':
-				if len(args) > 0:
-					arg = args.pop(0)
-					if arg in ('en', 'ru'):
-						titles = arg
-					else:
-						break
-			elif arg == '-of':
-				if len(args) > 0:
-					arg = args.pop(0)
-					if arg in outputFormatsImage + outputFormatsSound:
-						outputFormat = arg
-					else:
-						break
-			elif len(args) == 1:
-				tonality = arg
-				s = args.pop(0)
-				err = False
-			else:
-				break
-
-	if s == '-':
-		ss = [ s.strip() for s in sys.stdin.readlines() if s.strip() != '' ]
-	else:
-		ss = (s,)
+	while len(args) > 0:
+		arg = args.pop(0)
+		if arg == '-d':
+			debug = True
+		elif arg == '-t':
+			if len(args) > 0:
+				arg = args.pop(0)
+				if arg in ('en', 'ru'):
+					titles = arg
+				else:
+					break
+		elif arg == '-f':
+			functions = True
+		elif arg == '-of':
+			if len(args) > 0:
+				arg = args.pop(0)
+				if arg in outputFormatsImage + outputFormatsSound:
+					outputFormat = arg
+				else:
+					break
+		elif len(args) == 1:
+			tonality = arg
+			s = args.pop(0)
+			err = False
+		else:
+			break
 
 	if not err:
+		if s == '-':
+			ss = [ s.strip() for s in sys.stdin.readlines() if s.strip() != '' ]
+		else:
+			ss = (s,)
+
 		lilyPonder = LilyPonder.LilyPonder(tonality)
-		r = lilyPonder.strs2LilyPond(ss, debug=debug, titles=titles)
+		r = lilyPonder.strs2LilyPond(ss, debug=debug, titles=titles, functions=functions)
 		if outputFormat == None:
 			print('\n\n'.join(r))
 		else:
@@ -69,12 +71,13 @@ def main ():
 				assert fName != None
 				print(fName)
 	else:
-		print("usage: %s { -d | -t lang | -of format } tonality ( str | - )" % (sys.argv[0],))
+		print("usage: %s { -d | -t lang | -f | -of format } tonality ( str | - )" % (sys.argv[0],))
 		print("	-d: debug output")
 		print("	-t lang: add interval titles")
 		print("		lang: language")
 		print("			en: English")
 		print("			ru: Russian")
+		print("	-f: add functions")
 		print("	-of format: specify output format (if not specified: LilyPond)")
 		print("		format: pdf | svg | png | midi | wav | opus")
 		print("	str example: III_s3->IV_l3->II_l6->III_s6->I_l3->VIb_l6->V_p8->VII_d5->I_l3")

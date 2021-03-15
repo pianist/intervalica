@@ -8,6 +8,8 @@
 
 import hashlib, subprocess, tempfile, os
 
+import fn
+
 noteToStep0 = {'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11}
 noteToStep = lambda x: noteToStep0[x[0]] + x[1:].count('is') - x[1:].count('es') + (x.count("'") - x.count(",")) * 12
 
@@ -187,11 +189,16 @@ def addInterval (mode, n0, interval):
 
 	return stepNumToNote(n1s, n1n)
 
-def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
+def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octave=None):
 	mode = tonalityToMode[tonality]
 	tonalityNote = tonalityToNote[tonality]
 
 	seq = [ (degree, interval) for degree, interval in [ xy.split('_') for xy in s.split('->') ] ]
+
+	if functions and (mode == 'major'):
+		ff = fn.str2fn_major(s)
+	else:
+		ff = [ None ] * len(seq)
 
 	oldLow = None
 	oldHigh = None
@@ -271,8 +278,8 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 			assert False
 
 		assert noteToStep(n0) <= noteToStep(n1)
-		voices[0][1].append((n1, title))
-		voices[1][1].append((n0, None))
+		voices[0][1].append((n1, title, None))
+		voices[1][1].append((n0, None, ff[i]))
 
 	r = ['\\score {\n\t\\new Staff <<']
 	for voice in voices:
@@ -284,6 +291,8 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 		for i in range(len(notes)):
 			if voice[1][i][1] != None:
 				notes[i] += '^"%s"' % (voice[1][i][1],)
+			if voice[1][i][2] != None:
+				notes[i] += '_"%s"' % (voice[1][i][2],)
 		r.append("""		\\new Voice
 			{
 				\\key %s \\%s
@@ -294,36 +303,43 @@ def strToLilyPond0 (s, tonality, titles=None, debug=False, octave=None):
 	if debug:
 		debugStr = tonality + ' ' + s.replace('->', ' → ')
 		r.append("""	\\header {
-		piece = "%s"
+		piece = \\markup {
+			\\column {
+				\\null
+				\\null
+				"%s"
+				\\null
+			}
+		}
 	}""" % (debugStr,))
 	r.append("""	\\layout { }
 	\\midi { }
 }""")
 	return '\n'.join(r)
 
-def strToLilyPond (s, tonality, titles=None, debug=False, octave=None):
+def strToLilyPond (s, tonality, titles=None, functions=False, debug=False, octave=None):
 	if ' ' in s:
 		tonality, s = s.split()
 
 	if tonality == '*dur':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'major' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, functions=functions, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'major' ]
 	elif tonality == '*moll':
-		r = [ strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'minor' ]
+		r = [ strToLilyPond0(s, tonality, titles=titles, functions=functions, debug=debug, octave=octave) for tonality, mode in tonalityToMode.items() if mode == 'minor' ]
 	else:
-		r = ( strToLilyPond0(s, tonality, titles=titles, debug=debug, octave=octave), )
+		r = ( strToLilyPond0(s, tonality, titles=titles, functions=functions, debug=debug, octave=octave), )
 
 	return r
 
 # ss: list of strings
 # returns: [ header, score0, score1, ... ]
-def strs2LilyPond (ss, tonality, debug=False, titles=None):
+def strs2LilyPond (ss, tonality, debug=False, titles=None, functions=False):
 	r = [ '\\version "2.8.0"' ]
 	r.append("""\\header {
 	tagline = ""
 }""")
 	r = [ '\n\n'.join(r) ]
 
-	r.extend(['\n\n'.join(strToLilyPond(s, tonality, titles=titles, debug=debug)) for s in ss])
+	r.extend(['\n\n'.join(strToLilyPond(s, tonality, titles=titles, functions=functions, debug=debug)) for s in ss])
 
 	return r
 
@@ -392,8 +408,8 @@ class LilyPonder:
 	def __init__ (self, tonality):
 		self.tonality = tonality
 
-	def strs2LilyPond (self, ss, debug=False, titles=None):
-		return strs2LilyPond(ss, self.tonality, debug=debug, titles=titles)
+	def strs2LilyPond (self, ss, debug=False, titles=None, functions=False):
+		return strs2LilyPond(ss, self.tonality, debug=debug, titles=titles, functions=functions)
 
 	def getImage (self, s, format):
 		return getImage(s, format)
