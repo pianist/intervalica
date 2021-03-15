@@ -62,6 +62,9 @@ def str2fn_major (s):
 					f = 'S'
 				else:
 					f = 'D'
+			elif x == ('VIb', 'e5'):
+				# VIb_e5 это симметричный случай III_d4, пока считаем задержанием "в стиле Чайковского"
+				f = prevF
 			elif x[1] in ('s2', 'l2', 'e2', 'd7', 's7', 'l7'):
 				if x == ('VIb', 'e2'):
 					if (i + 1 < len(seq)) and (seq[i+1] == ('V', 'p4')):
