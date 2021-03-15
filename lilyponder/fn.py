@@ -66,6 +66,13 @@ def str2fn_major (s):
 					# I_l6 — секста из S, до неё T идёт, потому сразу S
 					# I_l6 — типичная секста из S, особенно после T
 					f = 'S'
+			elif x == ('IV', 'l6'):
+				if (i > 0) and (seq[i-1] == ('V', 'l3')) and (prevF == 'D'):
+					# IV_l6 после D в виде V_l3 точно будет D
+					f = 'D'
+				elif prevF == 'T':
+					# V_l6 сразу D после T
+					f = 'D'
 			elif x in (('I', 'l2'), ('II', 's7')):
 				# Для I_l2 придумал правило:
 				# * Если после S, то S
@@ -108,6 +115,15 @@ def str2fn_major (s):
 				if (i > 0) and (ff[i-1] == 'S') and (i + 1 < len(seq)) and (ff[i+1] == 'D'):
 					# IV_l6 — D, между S и D уже можно на D
 					f = 'D'
+		ff[i] = f
+		i += 1
+
+	# pass 3
+	for i in range(len(seq)):
+		f = ff[i]
+		if (f == None) and (i > 0) and (i + 1 < len(seq)) and (ff[i-1] == ff[i+1]):
+			# Можно сделать простой конечный проход, что всё не раскрашенное между двумя одинаковыми функциями — той же функции
+			f = ff[i-1]
 		ff[i] = f
 		i += 1
 
