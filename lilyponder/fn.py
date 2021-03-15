@@ -73,6 +73,10 @@ def str2fn_major (s):
 				elif prevF == 'T':
 					# V_l6 сразу D после T
 					f = 'D'
+			elif x == ('VI', 'p4'):
+				# VI_p4 после тоники точно S
+				if prevF == 'T':
+					f = 'S'
 			elif x in (('I', 'l2'), ('II', 's7')):
 				# Для I_l2 придумал правило:
 				# * Если после S, то S
