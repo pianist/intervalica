@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Alexander Shiryaev, 2021.03
+# Alexander Shiryaev, 2021.03, 2022.09
 #
 
 # первые признаки
@@ -35,7 +35,7 @@ def str2fn_major (s):
 	for i in range(len(seq)):
 		x = seq[i]
 		f = d0_major.get(x)
-		if f == None:
+		if f is None:
 			if x == ('IV', 'l3'):
 				# если можно, ставим S. Если нельзя (до этого была доминанта) — D
 				if prevF == 'D':
@@ -50,7 +50,7 @@ def str2fn_major (s):
 				# терция II_s3 — или D, или S, или Sh. По возможности D скорее ставим
 				f = 'D' # 'D' | 'S' | 'Sh'
 			elif x == ('VI', 's6'):
-				if prevF == None:
+				if prevF is None:
 					# секста из субдоминанты, до неё ничего нет, можно сразу считать S
 					f = 'S'
 				elif prevF == 'T':
@@ -94,7 +94,7 @@ def str2fn_major (s):
 					if (i + 1 < len(seq)) and (seq[i+1] == ('V', 'p4')):
 						# VIb_e2 — это всегда D. По определению прямо, характерный интервал доминанты с пониженной ноной, так как разрешается в кварту V_p4. Прямо такое правило, если разрешается в V_p4, то D
 						f = 'D'
-				if f == None:
+				if f is None:
 					# секунды и септимы чаще всего повторяют предыдущую функцию
 					f = prevF
 		ff[i] = f
@@ -115,7 +115,7 @@ def str2fn_major (s):
 				# VII_d7->I_p5 — типичная D
 				f = 'D'
 		elif x == ('IV', 'l6'):
-			if f == None:
+			if f is None:
 				if (i > 0) and (ff[i-1] == 'S') and (i + 1 < len(seq)) and (ff[i+1] == 'D'):
 					# IV_l6 — D, между S и D уже можно на D
 					f = 'D'
@@ -125,7 +125,7 @@ def str2fn_major (s):
 	# pass 3
 	for i in range(len(seq)):
 		f = ff[i]
-		if (f == None) and (i > 0) and (i + 1 < len(seq)) and (ff[i-1] == ff[i+1]):
+		if (f is None) and (i > 0) and (i + 1 < len(seq)) and (ff[i-1] == ff[i+1]):
 			# Можно сделать простой конечный проход, что всё не раскрашенное между двумя одинаковыми функциями — той же функции
 			f = ff[i-1]
 		ff[i] = f
@@ -136,7 +136,7 @@ def str2fn_major (s):
 def encodeSeq (ff):
 	rr = []
 	for f in ff:
-		if f != None:
+		if f is not None:
 			rr.append(f)
 		else:
 			rr.append('?')

@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Alexander Shiryaev, 2021.03
+# Alexander Shiryaev, 2021.03, 2022.09
 #
 
 import sys
@@ -20,8 +20,8 @@ def main ():
 				tonality = None
 			old = None
 			for x in line.split('->'):
-				if (old != None) and ((old == y) or (x == y)):
-					if tonality != None:
+				if (old is not None) and ((old == y) or (x == y)):
+					if tonality is not None:
 						print("%s %s->%s" % (tonality, old, x))
 					else:
 						print("%s->%s" % (old, x))

@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Alexander Shiryaev, 2021.03
+# Alexander Shiryaev, 2021.03, 2022.09
 #
 
 import sys
@@ -55,7 +55,7 @@ def main ():
 
 		lilyPonder = LilyPonder.LilyPonder(tonality)
 		r = lilyPonder.strs2LilyPond(ss, debug=debug, titles=titles, functions=functions)
-		if outputFormat == None:
+		if outputFormat is None:
 			print('\n\n'.join(r))
 		else:
 			header = r[0]
@@ -68,7 +68,7 @@ def main ():
 					fName = lilyPonder.getSound(s, outputFormat)
 				else:
 					assert False
-				assert fName != None
+				assert fName is not None
 				print(fName)
 	else:
 		print("usage: %s { -d | -t lang | -f | -of format } tonality ( str | - )" % (sys.argv[0],))

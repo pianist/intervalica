@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Alexander Shiryaev, 2021.03
+# Alexander Shiryaev, 2021.03, 2022.09
 #
 # https://music.stackexchange.com/a/40047
 #
@@ -212,7 +212,7 @@ def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octa
 		n0s = noteToStep(n0)
 
 		# low voice: relative
-		if oldLow != None:
+		if oldLow is not None:
 			while n0s - oldLow < -6:
 				n0s += 12
 				n0 += "'"
@@ -221,7 +221,7 @@ def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octa
 				n0 += ","
 
 		# prevent high voice jumps through low
-		if (oldHigh != None) and (oldLow != None):
+		if (oldHigh is not None) and (oldLow is not None):
 			# example: III_s6->VII_s3
 			while n0s + intervalToStep[mode][interval] < oldLow:
 				n0s += 12
@@ -239,18 +239,18 @@ def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octa
 		n1 = addInterval(mode, n0, interval)
 		high.append(n1)
 
-		if (minLow == None) or (minLow > n0s):
+		if (minLow is None) or (minLow > n0s):
 			minLow = n0s
-		if (maxLow == None) or (maxLow < n0s):
+		if (maxLow is None) or (maxLow < n0s):
 			maxLow = n0s
-		if (maxHigh == None) or (maxHigh < n1s):
+		if (maxHigh is None) or (maxHigh < n1s):
 			maxHigh = n1s
 
-	if octave == None:
+	if octave is None:
 		m = (minLow + maxLow + 1) // 2
 		octave = (12 + 11 - m) // 12
 
-#	if octave == None:
+#	if octave is None:
 #		m = (minLow + maxHigh + 1) // 2
 #		# octave = (12 + 11 + 6 - m) // 12
 #		octave = (12 + 11 + 5 - m) // 12
@@ -268,7 +268,7 @@ def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octa
 			n1 += ","*(-octave)
 
 		intervalRepr = seq[i][1]
-		if titles == None:
+		if titles is None:
 			title = None
 		elif titles == 'en':
 			title = intervalRepr
@@ -289,9 +289,9 @@ def strToLilyPond0 (s, tonality, titles=None, functions=False, debug=False, octa
 		if len(notes) % 2 == 1:
 			notes[-1] = notes[-1] + '1'
 		for i in range(len(notes)):
-			if voice[1][i][1] != None:
+			if voice[1][i][1] is not None:
 				notes[i] += '^"%s"' % (voice[1][i][1],)
-			if voice[1][i][2] != None:
+			if voice[1][i][2] is not None:
 				notes[i] += '_"%s"' % (voice[1][i][2],)
 		r.append("""		\\new Voice
 			{
@@ -369,7 +369,7 @@ def getMIDI (s):
 	fName = getBaseFileName(s) + '.midi'
 	if not os.path.exists(fName):
 		r = getImage(s, 'pdf')
-		assert r != None
+		assert r is not None
 	if os.path.exists(fName):
 		return fName
 
@@ -387,7 +387,7 @@ def getOpus (s):
 	fName = getBaseFileName(s) + '.opus'
 	if not os.path.exists(fName):
 		wavFName = getWAV(s)
-		if wavFName != None:
+		if wavFName is not None:
 			ret = subprocess.run(["ffmpeg", "-n", "-hide_banner", "-loglevel", "error", "-i", wavFName, fName], stdout=subprocess.DEVNULL)
 			assert ret.returncode == 0
 	if os.path.exists(fName):
